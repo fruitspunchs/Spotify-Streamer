@@ -4,15 +4,12 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.KeyEvent;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
@@ -28,10 +25,10 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
  */
 public class MainActivityFragment extends Fragment {
 
+    private SpotifyArtistArrayAdapter mArtistAdapter;
+
     public MainActivityFragment() {
     }
-
-    private SpotifyArtistArrayAdapter mArtistAdapter;
 
     /**
      * Creates the list to display artists and search box to find artists
@@ -60,14 +57,17 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
-        final EditText editText = (EditText) rootView.findViewById(R.id.search_artist_edit_text);
-        editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        final SearchView searchView = (SearchView) rootView.findViewById(R.id.search_view_artist);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    new FetchArtistTask().execute(editText.getText().toString());
-                }
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                new FetchArtistTask().execute(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
                 return false;
             }
         });
@@ -85,6 +85,7 @@ public class MainActivityFragment extends Fragment {
      */
     public class FetchArtistTask extends AsyncTask<String, Void, List<Artist>> {
         private final String LOG_TAG = FetchArtistTask.class.getSimpleName();
+        private Toast toast;
 
         @Override
         protected List<Artist> doInBackground(String... artist) {
@@ -94,9 +95,6 @@ public class MainActivityFragment extends Fragment {
 
             return results.artists.items;
         }
-
-
-        private Toast toast;
 
         private void displayToast(String message) {
             if (toast != null) {
