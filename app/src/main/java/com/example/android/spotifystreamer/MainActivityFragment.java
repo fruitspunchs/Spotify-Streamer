@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.List;
@@ -31,7 +32,8 @@ import retrofit.RetrofitError;
 public class MainActivityFragment extends Fragment {
 
     private SpotifyArtistArrayAdapter mArtistAdapter;
-    private Toast toast;
+    private Toast mToast;
+    private ProgressBar mProgressBar;
 
     public MainActivityFragment() {
     }
@@ -48,6 +50,9 @@ public class MainActivityFragment extends Fragment {
         ArtistInfo mArtistInfo = new ArtistInfo();
         mArtistAdapter = new SpotifyArtistArrayAdapter(getActivity(), mArtistInfo, R.layout.list_item_artist, R.id.list_item_artist_textview, R.id.list_item_artist_imageview);
 
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar_artist_search);
+        mProgressBar.setVisibility(View.GONE);
+
         final ListView listView = (ListView) rootView.findViewById(R.id.list_view_artist);
         listView.setAdapter(mArtistAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -63,7 +68,7 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
-        final SearchView searchView = (SearchView) rootView.findViewById(R.id.search_view_artist);
+        final SearchView searchView = (SearchView) rootView.findViewById(R.id.artist_search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
@@ -94,6 +99,7 @@ public class MainActivityFragment extends Fragment {
                 activeNetwork.isConnectedOrConnecting();
 
         if (isConnected) {
+            mProgressBar.setVisibility(View.VISIBLE);
             new FetchArtistTask().execute(query);
         } else {
             displayToast(getString(R.string.toast_no_network_connectivity));
@@ -101,12 +107,12 @@ public class MainActivityFragment extends Fragment {
     }
 
     private void displayToast(String message) {
-        if (toast != null) {
-            toast.cancel();
+        if (mToast != null) {
+            mToast.cancel();
         }
 
-        toast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
-        toast.show();
+        mToast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
+        mToast.show();
     }
 
 
@@ -137,6 +143,7 @@ public class MainActivityFragment extends Fragment {
         protected void onPostExecute(List<Artist> artists) {
             super.onPostExecute(artists);
             mArtistAdapter.clear();
+            mProgressBar.setVisibility(View.GONE);
 
             if (artists != null) {
                 if (artists.isEmpty()) {

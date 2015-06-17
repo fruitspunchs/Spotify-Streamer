@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.HashMap;
@@ -35,7 +36,8 @@ public class Top10TracksActivityFragment extends Fragment {
 
     private SpotifyTracksArrayAdapter mSpotifyTracksArrayAdapter;
     private String mId;
-    private Toast toast;
+    private Toast mToast;
+    private ProgressBar mProgressBar;
 
     public Top10TracksActivityFragment() {
     }
@@ -51,6 +53,9 @@ public class Top10TracksActivityFragment extends Fragment {
         mId = getActivity().getIntent().getStringExtra(Intent.EXTRA_TEXT);
         String subtitle = getActivity().getIntent().getStringExtra(Intent.EXTRA_TITLE);
 
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar_top_10_tracks);
+        mProgressBar.setVisibility(View.VISIBLE);
+
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setSubtitle(subtitle);
@@ -59,6 +64,7 @@ public class Top10TracksActivityFragment extends Fragment {
         TrackInfo trackInfo = new TrackInfo();
 
         mSpotifyTracksArrayAdapter = new SpotifyTracksArrayAdapter(getActivity(), trackInfo, R.layout.list_item_tracks, R.id.list_item_track_textview, R.id.list_item_album_textview, R.id.list_item_album_imageview);
+
 
         final ListView listView = (ListView) rootView.findViewById(R.id.list_view_tracks);
         listView.setAdapter(mSpotifyTracksArrayAdapter);
@@ -78,10 +84,9 @@ public class Top10TracksActivityFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
         searchTop10Albums();
-
     }
 
     private void searchTop10Albums() {
@@ -91,6 +96,7 @@ public class Top10TracksActivityFragment extends Fragment {
                 activeNetwork.isConnectedOrConnecting();
 
         if (isConnected) {
+            mProgressBar.setVisibility(View.VISIBLE);
             new FetchTop10Albums().execute(mId);
         } else {
             displayToast(getString(R.string.toast_no_network_connectivity));
@@ -98,12 +104,12 @@ public class Top10TracksActivityFragment extends Fragment {
     }
 
     private void displayToast(String message) {
-        if (toast != null) {
-            toast.cancel();
+        if (mToast != null) {
+            mToast.cancel();
         }
 
-        toast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
-        toast.show();
+        mToast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
+        mToast.show();
     }
 
     /**
@@ -133,10 +139,10 @@ public class Top10TracksActivityFragment extends Fragment {
             return results.tracks;
         }
 
-
         @Override
         protected void onPostExecute(List<Track> tracks) {
             super.onPostExecute(tracks);
+            mProgressBar.setVisibility(View.GONE);
             if (tracks != null) {
                 if (tracks.isEmpty()) {
                     displayToast(getString(R.string.toast_no_tracks_found));

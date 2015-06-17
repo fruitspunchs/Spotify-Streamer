@@ -12,16 +12,30 @@
     tools:showIn="@layout/activity_main">
 
     <android.support.v7.widget.SearchView
-        android:id="@+id/search_view_artist"
+        android:id="@+id/artist_search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
         android:inputType="text"
         app:iconifiedByDefault="false"
         app:queryHint="@string/search_view_artist_hint" />
 
-    <ListView
-        android:id="@+id/list_view_artist"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/progress_bar_artist_search"
+            style="@style/Base.Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true" />
+
+        <ListView
+            android:id="@+id/list_view_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </FrameLayout>
+
 </LinearLayout>
