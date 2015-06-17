@@ -1,6 +1,9 @@
 package com.example.android.spotifystreamer;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -32,6 +35,8 @@ public class Top10TracksActivityFragment extends Fragment {
 
     private SpotifyTracksArrayAdapter mSpotifyTracksArrayAdapter;
     private String mId;
+    private Toast toast;
+
     public Top10TracksActivityFragment() {
     }
 
@@ -75,7 +80,30 @@ public class Top10TracksActivityFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        new FetchTop10Albums().execute(mId);
+        searchTop10Albums();
+
+    }
+
+    private void searchTop10Albums() {
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        if (isConnected) {
+            new FetchTop10Albums().execute(mId);
+        } else {
+            displayToast(getString(R.string.toast_no_network_connectivity));
+        }
+    }
+
+    private void displayToast(String message) {
+        if (toast != null) {
+            toast.cancel();
+        }
+
+        toast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
+        toast.show();
     }
 
     /**
@@ -83,7 +111,6 @@ public class Top10TracksActivityFragment extends Fragment {
      */
     public class FetchTop10Albums extends AsyncTask<String, Void, List<Track>> {
         private final String LOG_TAG = FetchTop10Albums.class.getSimpleName();
-        private Toast toast;
 
         @Override
         protected List<Track> doInBackground(String... ids) {
@@ -104,15 +131,6 @@ public class Top10TracksActivityFragment extends Fragment {
             }
 
             return results.tracks;
-        }
-
-        private void displayToast(String message) {
-            if (toast != null) {
-                toast.cancel();
-            }
-
-            toast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
-            toast.show();
         }
 
 
