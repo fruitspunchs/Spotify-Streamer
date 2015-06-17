@@ -15,9 +15,11 @@ import android.widget.Toast;
 import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyError;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
+import retrofit.RetrofitError;
 
 
 /**
@@ -89,9 +91,17 @@ public class MainActivityFragment extends Fragment {
 
         @Override
         protected List<Artist> doInBackground(String... artist) {
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService spotify = api.getService();
-            ArtistsPager results = spotify.searchArtists(artist[0]);
+            ArtistsPager results;
+
+            try {
+                SpotifyApi api = new SpotifyApi();
+                SpotifyService spotify = api.getService();
+                results = spotify.searchArtists(artist[0]);
+            } catch (RetrofitError error) {
+                SpotifyError spotifyError = SpotifyError.fromRetrofitError(error);
+                displayToast(spotifyError.getMessage());
+                return null;
+            }
 
             return results.artists.items;
         }
@@ -124,8 +134,6 @@ public class MainActivityFragment extends Fragment {
                         mArtistAdapter.add(artistItem.name, artistItem.images.get(lastItem).url, artistItem.id);
                     }
                 }
-            } else {
-                displayToast(getString(R.string.toast_no_artist_found));
             }
         }
     }

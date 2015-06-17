@@ -18,9 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyError;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.RetrofitError;
 
 
 /**
@@ -28,11 +30,10 @@ import kaaes.spotify.webapi.android.models.Tracks;
  */
 public class Top10TracksActivityFragment extends Fragment {
 
-    public Top10TracksActivityFragment() {
-    }
-
     private SpotifyTracksArrayAdapter mSpotifyTracksArrayAdapter;
     private String mId;
+    public Top10TracksActivityFragment() {
+    }
 
     /**
      * Creates the list to display tracks
@@ -52,7 +53,7 @@ public class Top10TracksActivityFragment extends Fragment {
 
         TrackInfo trackInfo = new TrackInfo();
 
-        mSpotifyTracksArrayAdapter = new SpotifyTracksArrayAdapter(getActivity(), trackInfo, R.layout.list_item_tracks, R.id.list_item_track_textview,R.id.list_item_album_textview, R.id.list_item_album_imageview);
+        mSpotifyTracksArrayAdapter = new SpotifyTracksArrayAdapter(getActivity(), trackInfo, R.layout.list_item_tracks, R.id.list_item_track_textview, R.id.list_item_album_textview, R.id.list_item_album_imageview);
 
         final ListView listView = (ListView) rootView.findViewById(R.id.list_view_tracks);
         listView.setAdapter(mSpotifyTracksArrayAdapter);
@@ -82,21 +83,28 @@ public class Top10TracksActivityFragment extends Fragment {
      */
     public class FetchTop10Albums extends AsyncTask<String, Void, List<Track>> {
         private final String LOG_TAG = FetchTop10Albums.class.getSimpleName();
+        private Toast toast;
 
         @Override
         protected List<Track> doInBackground(String... ids) {
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService spotify = api.getService();
+            Tracks results;
 
-            Map<String, Object> map = new HashMap<>();
-            map.put("country", "PH");
+            try {
+                SpotifyApi api = new SpotifyApi();
+                SpotifyService spotify = api.getService();
 
-            Tracks results = spotify.getArtistTopTrack(ids[0], map);
+                Map<String, Object> map = new HashMap<>();
+                map.put("country", "PH");
+
+                results = spotify.getArtistTopTrack(ids[0], map);
+            } catch (RetrofitError error) {
+                SpotifyError spotifyError = SpotifyError.fromRetrofitError(error);
+                displayToast(spotifyError.getMessage());
+                return null;
+            }
 
             return results.tracks;
         }
-
-        private Toast toast;
 
         private void displayToast(String message) {
             if (toast != null) {
@@ -129,8 +137,6 @@ public class Top10TracksActivityFragment extends Fragment {
 
                     mSpotifyTracksArrayAdapter.add(track.name, track.album.name, mediumThumbnail, largeThumbnail, track.preview_url);
                 }
-            } else {
-                displayToast(getString(R.string.toast_no_tracks_found));
             }
         }
     }
