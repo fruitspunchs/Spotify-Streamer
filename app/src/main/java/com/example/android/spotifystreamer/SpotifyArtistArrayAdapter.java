@@ -22,6 +22,10 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
     private final int mTextViewResourceId;
     private final int mImageViewResourceId;
     private final ArtistInfo mArtistInfo;
+    /**
+     * Assign a random color to artist with no images
+     */
+    private final Random mRandomNumber = new Random();
 
     public SpotifyArtistArrayAdapter(Activity activity,
                                      ArtistInfo artistInfo, int resource, int textViewResourceId, int imageViewResourceId) {
@@ -41,13 +45,8 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
     public View getView(int position, View view, ViewGroup parent) {
         LayoutInflater inflater = mActivity.getLayoutInflater();
 
-        View rootView = null;
-
-        if (view != null) {
-            rootView = view;
-        } else {
-            rootView = inflater.inflate(mResource, parent, false);
-        }
+        //Recycling view causes item imageView to show pictures from other artists if you scroll fast repeatedly
+        View rootView = inflater.inflate(mResource, parent, false);
 
         TextView txtTitle = (TextView) rootView.findViewById(mTextViewResourceId);
 
@@ -72,11 +71,6 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
         super.clear();
         mArtistInfo.clear();
     }
-
-    /**
-     * Assign a random color to artist with no images
-     */
-    private final Random mRandomNumber = new Random();
 
     private int randomColor() {
         return Color.rgb(mRandomNumber.nextInt(256), mRandomNumber.nextInt(256), mRandomNumber.nextInt(256));
