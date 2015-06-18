@@ -1,7 +1,6 @@
 package com.example.android.spotifystreamer;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +57,7 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
         viewHolder.text.setText(mArtistInfo.getArtistNames().get(position));
 
         if (mArtistInfo.getArtistImages().get(position).equals("")) {
-            //<div>Icon made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></div>
+            //Icon made by http://www.freepik.com from http://www.flaticon.com is licensed under Creative Commons BY 3.0
             viewHolder.image.setImageResource(R.mipmap.artist_placeholder);
         } else {
             Picasso.with(getContext()).load(mArtistInfo.getArtistImages().get(position)).into(viewHolder.image);
@@ -76,14 +75,9 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
         mArtistInfo.clear();
     }
 
-    private int randomColor() {
-        return Color.rgb(mRandomNumber.nextInt(256), mRandomNumber.nextInt(256), mRandomNumber.nextInt(256));
-    }
-
     public void add(String object, String imageUrl, String id) {
         super.add(object);
         mArtistInfo.getArtistImages().add(imageUrl);
-        mArtistInfo.getDefaultColors().add(randomColor());
         mArtistInfo.getIds().add(id);
     }
 

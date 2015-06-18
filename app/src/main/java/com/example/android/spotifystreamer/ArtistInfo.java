@@ -8,7 +8,6 @@ import java.util.ArrayList;
 public class ArtistInfo {
     private ArrayList<String> mArtistNames = new ArrayList<>();
     private ArrayList<String> mArtistImages = new ArrayList<>();
-    private ArrayList<Integer> mDefaultColors = new ArrayList<>();
     private ArrayList<String> mIds = new ArrayList<>();
 
     public ArrayList<String> getArtistNames() {
@@ -19,10 +18,6 @@ public class ArtistInfo {
         return mArtistImages;
     }
 
-    public ArrayList<Integer> getDefaultColors() {
-        return mDefaultColors;
-    }
-
     public ArrayList<String> getIds() {
         return mIds;
     }
@@ -30,7 +25,6 @@ public class ArtistInfo {
     public void clear() {
         mArtistNames.clear();
         mArtistImages.clear();
-        mDefaultColors.clear();
         mIds.clear();
     }
 }
