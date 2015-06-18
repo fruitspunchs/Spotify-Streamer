@@ -10,8 +10,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.Random;
-
 /**
  * Displays an album image with track name and album name
  */
@@ -21,10 +19,6 @@ public class SpotifyTracksArrayAdapter extends ArrayAdapter<String> {
     private final int mTextViewTrackId;
     private final int mTextViewAlbumId;
     private final int mImageViewThumbnailId;
-    /**
-     * Assign a random color to album with no images
-     */
-    private final Random mRandomNumber = new Random();
 
     public SpotifyTracksArrayAdapter(Activity activity, TrackInfo trackInfo, int resource, int textViewTrackId, int textViewAlbumId, int imageViewThumbnailId) {
         super(activity, resource, trackInfo.getTrackNames());

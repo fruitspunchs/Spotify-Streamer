@@ -10,8 +10,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.Random;
-
 /**
  * Displays an artist image with name
  */
@@ -20,10 +18,6 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
     private final int mTextViewResourceId;
     private final int mImageViewResourceId;
     private final ArtistInfo mArtistInfo;
-    /**
-     * Assign a random color to artist with no images
-     */
-    private final Random mRandomNumber = new Random();
 
     public SpotifyArtistArrayAdapter(Activity activity,
                                      ArtistInfo artistInfo, int resource, int textViewResourceId, int imageViewResourceId) {
