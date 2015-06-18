@@ -16,12 +16,11 @@ import java.util.Random;
  * Displays an album image with track name and album name
  */
 public class SpotifyTracksArrayAdapter extends ArrayAdapter<String> {
-    private final Activity mActivity;
     private final TrackInfo mTrackInfo;
     private final int mResource;
-    private final int textViewTrackId;
-    private final int textViewAlbumId;
-    private final int imageViewThumbnailId;
+    private final int mTextViewTrackId;
+    private final int mTextViewAlbumId;
+    private final int mImageViewThumbnailId;
     /**
      * Assign a random color to album with no images
      */
@@ -29,38 +28,44 @@ public class SpotifyTracksArrayAdapter extends ArrayAdapter<String> {
 
     public SpotifyTracksArrayAdapter(Activity activity, TrackInfo trackInfo, int resource, int textViewTrackId, int textViewAlbumId, int imageViewThumbnailId) {
         super(activity, resource, trackInfo.getTrackNames());
-        this.mActivity = activity;
         this.mTrackInfo = trackInfo;
         this.mResource = resource;
-        this.textViewTrackId = textViewTrackId;
-        this.textViewAlbumId = textViewAlbumId;
-        this.imageViewThumbnailId = imageViewThumbnailId;
+        this.mTextViewTrackId = textViewTrackId;
+        this.mTextViewAlbumId = textViewAlbumId;
+        this.mImageViewThumbnailId = imageViewThumbnailId;
     }
 
     /**
      * Creates a list item containing a thumbnail image, track name, and album name
      */
     @Override
-    public View getView(int position, View view, ViewGroup parent) {
-        LayoutInflater inflater = mActivity.getLayoutInflater();
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder viewHolder;
+        LayoutInflater inflater = LayoutInflater.from(getContext());
 
-        //Recycling view causes item imageView to show pictures from other artists if you scroll fast repeatedly
-        View rootView = inflater.inflate(mResource, parent, false);
+        if (convertView == null) {
+            convertView = inflater.inflate(mResource, parent, false);
 
-        TextView txtTrack = (TextView) rootView.findViewById(textViewTrackId);
-        txtTrack.setText(mTrackInfo.getTrackNames().get(position));
-
-        TextView txtAlbum = (TextView) rootView.findViewById(textViewAlbumId);
-        txtAlbum.setText(mTrackInfo.getAlbumNames().get(position));
-
-        ImageView imageView = (ImageView) rootView.findViewById(imageViewThumbnailId);
-
-        if (mTrackInfo.getMediumThumbnails().get(position).equals("")) {
+            viewHolder = new ViewHolder();
+            viewHolder.trackText = (TextView) convertView.findViewById(mTextViewTrackId);
+            viewHolder.albumText = (TextView) convertView.findViewById(mTextViewAlbumId);
+            viewHolder.albumImage = (ImageView) convertView.findViewById(mImageViewThumbnailId);
+            convertView.setTag(viewHolder);
         } else {
-            Picasso.with(mActivity).load(mTrackInfo.getMediumThumbnails().get(position)).into(imageView);
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        return rootView;
+        viewHolder.trackText.setText(mTrackInfo.getTrackNames().get(position));
+        viewHolder.albumText.setText(mTrackInfo.getAlbumNames().get(position));
+
+        if (mTrackInfo.getMediumThumbnails().get(position).equals("")) {
+            //Icon made by http://www.freepik.com from http://www.flaticon.com is licensed under Creative Commons BY 3.0
+            viewHolder.albumImage.setImageResource(R.mipmap.artist_placeholder);
+        } else {
+            Picasso.with(getContext()).load(mTrackInfo.getMediumThumbnails().get(position)).into(viewHolder.albumImage);
+        }
+
+        return convertView;
     }
 
     /**
@@ -78,5 +83,11 @@ public class SpotifyTracksArrayAdapter extends ArrayAdapter<String> {
         mTrackInfo.getMediumThumbnails().add(mediumThumbnail);
         mTrackInfo.getLargeThumbnails().add(largeThumbnail);
         mTrackInfo.getTrackPreviewUrls().add(trackUrl);
+    }
+
+    private static class ViewHolder {
+        TextView trackText;
+        TextView albumText;
+        ImageView albumImage;
     }
 }
