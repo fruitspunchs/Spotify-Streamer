@@ -1,7 +1,6 @@
 package com.example.android.spotifystreamer;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,7 +56,6 @@ public class SpotifyTracksArrayAdapter extends ArrayAdapter<String> {
         ImageView imageView = (ImageView) rootView.findViewById(imageViewThumbnailId);
 
         if (mTrackInfo.getMediumThumbnails().get(position).equals("")) {
-            imageView.setBackgroundColor(mTrackInfo.getDefaultColors().get(position));
         } else {
             Picasso.with(mActivity).load(mTrackInfo.getMediumThumbnails().get(position)).into(imageView);
         }
@@ -74,16 +72,11 @@ public class SpotifyTracksArrayAdapter extends ArrayAdapter<String> {
         mTrackInfo.clear();
     }
 
-    private int randomColor() {
-        return Color.rgb(mRandomNumber.nextInt(256), mRandomNumber.nextInt(256), mRandomNumber.nextInt(256));
-    }
-
     public void add(String track, String album, String mediumThumbnail, String largeThumbnail, String trackUrl) {
         super.add(track);
         mTrackInfo.getAlbumNames().add(album);
         mTrackInfo.getMediumThumbnails().add(mediumThumbnail);
         mTrackInfo.getLargeThumbnails().add(largeThumbnail);
-        mTrackInfo.getDefaultColors().add(randomColor());
         mTrackInfo.getTrackPreviewUrls().add(trackUrl);
     }
 }
