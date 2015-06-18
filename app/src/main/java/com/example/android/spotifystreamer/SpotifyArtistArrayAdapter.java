@@ -17,7 +17,6 @@ import java.util.Random;
  * Displays an artist image with name
  */
 public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
-    private final Activity mActivity;
     private final int mResource;
     private final int mTextViewResourceId;
     private final int mImageViewResourceId;
@@ -30,7 +29,6 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
     public SpotifyArtistArrayAdapter(Activity activity,
                                      ArtistInfo artistInfo, int resource, int textViewResourceId, int imageViewResourceId) {
         super(activity, resource, artistInfo.getArtistNames());
-        this.mActivity = activity;
         this.mArtistInfo = artistInfo;
         this.mResource = resource;
         this.mTextViewResourceId = textViewResourceId;
@@ -42,25 +40,31 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
      * Creates a list item containing an artist image with name
      */
     @Override
-    public View getView(int position, View view, ViewGroup parent) {
-        LayoutInflater inflater = mActivity.getLayoutInflater();
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder viewHolder;
+        LayoutInflater inflater = LayoutInflater.from(getContext());
 
-        //Recycling view causes item imageView to show pictures from other artists if you scroll fast repeatedly
-        View rootView = inflater.inflate(mResource, parent, false);
+        if (convertView == null) {
+            convertView = inflater.inflate(mResource, parent, false);
 
-        TextView txtTitle = (TextView) rootView.findViewById(mTextViewResourceId);
-
-        ImageView imageView = (ImageView) rootView.findViewById(mImageViewResourceId);
-
-        txtTitle.setText(mArtistInfo.getArtistNames().get(position));
-
-        if (mArtistInfo.getArtistImages().get(position).equals("")) {
-            imageView.setBackgroundColor(mArtistInfo.getDefaultColors().get(position));
+            viewHolder = new ViewHolder();
+            viewHolder.text = (TextView) convertView.findViewById(mTextViewResourceId);
+            viewHolder.image = (ImageView) convertView.findViewById(mImageViewResourceId);
+            convertView.setTag(viewHolder);
         } else {
-            Picasso.with(mActivity).load(mArtistInfo.getArtistImages().get(position)).into(imageView);
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        return rootView;
+        viewHolder.text.setText(mArtistInfo.getArtistNames().get(position));
+
+        if (mArtistInfo.getArtistImages().get(position).equals("")) {
+            //<div>Icon made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></div>
+            viewHolder.image.setImageResource(R.mipmap.artist_placeholder);
+        } else {
+            Picasso.with(getContext()).load(mArtistInfo.getArtistImages().get(position)).into(viewHolder.image);
+        }
+
+        return convertView;
     }
 
     /**
@@ -85,6 +89,11 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
 
     public String getId(int index) {
         return mArtistInfo.getIds().get(index);
+    }
+
+    private static class ViewHolder {
+        TextView text;
+        ImageView image;
     }
 
 
