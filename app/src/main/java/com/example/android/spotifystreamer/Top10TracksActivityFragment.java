@@ -1,14 +1,11 @@
 package com.example.android.spotifystreamer;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,16 +47,19 @@ public class Top10TracksActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_top10_tracks, container, false);
 
-        mId = getActivity().getIntent().getStringExtra(Intent.EXTRA_TEXT);
-        String subtitle = getActivity().getIntent().getStringExtra(Intent.EXTRA_TITLE);
+        if (getArguments() != null) {
+            mId = getArguments().getString(MainActivity.ARTIST_ID_KEY);
+        }
+//      String subtitle = getActivity().getIntent().getStringExtra(Intent.EXTRA_TITLE);
 
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar_top_10_tracks);
-        mProgressBar.setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(View.GONE);
 
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setSubtitle(subtitle);
-        }
+        //TODO: only change subtitle if one pane layout
+//        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+//        if (actionBar != null) {
+//            actionBar.setSubtitle(subtitle);
+//        }
 
         TrackInfo trackInfo = new TrackInfo();
 
@@ -86,10 +86,15 @@ public class Top10TracksActivityFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        //TODO: handle tablet layout
         searchTop10Albums();
     }
 
     private void searchTop10Albums() {
+        if (null == mId) {
+            return;
+        }
+
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         boolean isConnected = activeNetwork != null &&
