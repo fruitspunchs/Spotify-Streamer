@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:baselineAligned="false"
     android:orientation="horizontal">
 
@@ -18,7 +19,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp"
-            android:contentDescription="@string/image_view_artist_description" />
+            android:src="@mipmap/artist_placeholder" />
     </FrameLayout>
 
     <FrameLayout
@@ -33,8 +34,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center|left"
             android:singleLine="true"
-            android:text="Artist Name"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            tools:text="Artist Name" />
     </FrameLayout>
 
 </LinearLayout>
