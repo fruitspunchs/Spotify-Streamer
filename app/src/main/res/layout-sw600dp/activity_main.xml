@@ -18,7 +18,7 @@
         tools:layout="@layout/fragment_main" />
 
     <FrameLayout
-        android:id="@+id/fragment_top10tracks_container"
+        android:id="@+id/top10tracks_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="4" />
