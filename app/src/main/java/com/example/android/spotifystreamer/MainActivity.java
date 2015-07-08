@@ -9,6 +9,7 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.ItemSelectedCallback {
 
     public static String ARTIST_ID_KEY = "artistId";
+    public static String ARTIST_NAME_KEY = "artistName";
     private boolean mTwoPane;
 
     @Override
@@ -46,11 +47,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     }
 
     @Override
-    public void onItemSelected(String mId) {
+    public void onItemSelected(String mId, String artistName) {
         if (mTwoPane) {
             Top10TracksActivityFragment fragment = new Top10TracksActivityFragment();
             Bundle args = new Bundle();
             args.putString(ARTIST_ID_KEY, mId);
+            args.putString(ARTIST_NAME_KEY, artistName);
             fragment.setArguments(args);
 
             getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, fragment).commit();
