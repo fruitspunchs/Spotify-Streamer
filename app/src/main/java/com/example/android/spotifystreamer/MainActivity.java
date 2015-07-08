@@ -6,8 +6,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.ItemSelectedCallback {
 
+    public static String ARTIST_ID_KEY = "artistId";
     private boolean mTwoPane;
 
     @Override
@@ -29,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -43,5 +43,19 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemSelected(String mId) {
+        if (mTwoPane) {
+            Top10TracksActivityFragment fragment = new Top10TracksActivityFragment();
+            Bundle args = new Bundle();
+            args.putString(ARTIST_ID_KEY, mId);
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, fragment).commit();
+        } else {
+            //TODO: code for phone layout
+        }
     }
 }
