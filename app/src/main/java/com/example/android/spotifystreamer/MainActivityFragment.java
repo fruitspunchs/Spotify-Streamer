@@ -1,7 +1,6 @@
 package com.example.android.spotifystreamer;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -61,9 +60,11 @@ public class MainActivityFragment extends Fragment {
 
                 String artistId = mArtistAdapter.getId(position);
                 String artistName = mArtistAdapter.getItem(position);
-                Intent seeTop10Tracks = new Intent(getActivity(), Top10TracksActivity.class).putExtra(Intent.EXTRA_TEXT, artistId).putExtra(Intent.EXTRA_TITLE, artistName);
 
-                startActivity(seeTop10Tracks);
+                ((ItemSelectedCallback) getActivity()).onItemSelected(artistId, artistName);
+//                Intent seeTop10Tracks = new Intent(getActivity(), Top10TracksActivity.class).putExtra(Intent.EXTRA_TEXT, artistId).putExtra(Intent.EXTRA_TITLE, artistName);
+//
+//                startActivity(seeTop10Tracks);
 
             }
         });
@@ -116,7 +117,7 @@ public class MainActivityFragment extends Fragment {
     }
 
     public interface ItemSelectedCallback {
-        void onItemSelected(String mId);
+        void onItemSelected(String mId, String artistName);
     }
 
     /**
