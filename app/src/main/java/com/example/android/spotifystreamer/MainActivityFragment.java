@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -117,7 +116,7 @@ public class MainActivityFragment extends Fragment {
     }
 
     public interface ItemSelectedCallback {
-        void onItemSelected(Uri dateUri);
+        void onItemSelected(String mId);
     }
 
     /**
