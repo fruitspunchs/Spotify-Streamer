@@ -8,10 +8,26 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private boolean mTwoPane;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        setContentView(R.layout.activity_main);
+        if (findViewById(R.id.top10tracks_container) != null) {
+            // The detail container view will be present only in the large-screen layouts
+            // (res/layout-sw600dp). If this view is present, then the activity should be
+            // in two-pane mode.
+            mTwoPane = true;
+
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, new Top10TracksActivityFragment()).commit();
+            }
+        } else {
+            mTwoPane = false;
+        }
     }
 
 
