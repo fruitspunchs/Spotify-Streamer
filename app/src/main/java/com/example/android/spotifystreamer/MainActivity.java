@@ -47,11 +47,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     }
 
     @Override
-    public void onItemSelected(String mId, String artistName) {
+    public void onItemSelected(String id, String artistName) {
         if (mTwoPane) {
             Top10TracksActivityFragment fragment = new Top10TracksActivityFragment();
             Bundle args = new Bundle();
-            args.putString(ARTIST_ID_KEY, mId);
+            args.putString(ARTIST_ID_KEY, id);
             args.putString(ARTIST_NAME_KEY, artistName);
             fragment.setArguments(args);
 

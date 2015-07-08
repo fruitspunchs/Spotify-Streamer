@@ -117,7 +117,7 @@ public class MainActivityFragment extends Fragment {
     }
 
     public interface ItemSelectedCallback {
-        void onItemSelected(String mId, String artistName);
+        void onItemSelected(String id, String artistName);
     }
 
     /**
