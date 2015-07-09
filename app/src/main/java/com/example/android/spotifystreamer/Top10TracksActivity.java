@@ -22,7 +22,7 @@ public class Top10TracksActivity extends AppCompatActivity {
             arguments.putString(MainActivity.ARTIST_NAME_KEY, getIntent().getStringExtra(MainActivity.ARTIST_NAME_KEY));
             arguments.putBoolean(MainActivity.IS_TWO_PANE_KEY, getIntent().getBooleanExtra(MainActivity.IS_TWO_PANE_KEY, false));
 
-            Top10TracksActivityFragment fragment = new Top10TracksActivityFragment();
+            Top10TracksFragment fragment = new Top10TracksFragment();
             fragment.setArguments(arguments);
 
             getSupportFragmentManager().beginTransaction()

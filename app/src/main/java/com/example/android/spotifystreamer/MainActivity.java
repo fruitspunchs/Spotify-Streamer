@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Item
             mTwoPane = true;
 
             if (savedInstanceState == null) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, new Top10TracksActivityFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, new Top10TracksFragment()).commit();
             }
         } else {
             mTwoPane = false;
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Item
     @Override
     public void onItemSelected(String id, String artistName) {
         if (mTwoPane) {
-            Top10TracksActivityFragment fragment = new Top10TracksActivityFragment();
+            Top10TracksFragment fragment = new Top10TracksFragment();
             Bundle args = new Bundle();
             args.putString(ARTIST_ID_KEY, id);
             args.putString(ARTIST_NAME_KEY, artistName);

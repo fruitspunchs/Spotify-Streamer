@@ -31,14 +31,14 @@ import retrofit.RetrofitError;
 /**
  * Displays an artist's top 10 tracks
  */
-public class Top10TracksActivityFragment extends Fragment {
+public class Top10TracksFragment extends Fragment {
 
     private SpotifyTracksArrayAdapter mSpotifyTracksArrayAdapter;
     private String mId;
     private Toast mToast;
     private ProgressBar mProgressBar;
 
-    public Top10TracksActivityFragment() {
+    public Top10TracksFragment() {
     }
 
     /**
