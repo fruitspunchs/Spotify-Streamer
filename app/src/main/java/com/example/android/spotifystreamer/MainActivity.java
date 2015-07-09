@@ -7,7 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends AppCompatActivity implements MainActivityFragment.ItemSelectedCallback {
+public class MainActivity extends AppCompatActivity implements MainFragment.ItemSelectedCallback {
 
     public static String ARTIST_ID_KEY = "artistId";
     public static String ARTIST_NAME_KEY = "artistName";

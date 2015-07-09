@@ -28,13 +28,13 @@ import retrofit.RetrofitError;
 /**
  * Search Spotify for a list of artists and display them
  */
-public class MainActivityFragment extends Fragment {
+public class MainFragment extends Fragment {
 
     private SpotifyArtistArrayAdapter mArtistAdapter;
     private Toast mToast;
     private ProgressBar mProgressBar;
 
-    public MainActivityFragment() {
+    public MainFragment() {
     }
 
     /**
