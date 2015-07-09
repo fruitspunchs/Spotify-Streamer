@@ -62,9 +62,6 @@ public class MainActivityFragment extends Fragment {
                 String artistName = mArtistAdapter.getItem(position);
 
                 ((ItemSelectedCallback) getActivity()).onItemSelected(artistId, artistName);
-//                Intent seeTop10Tracks = new Intent(getActivity(), Top10TracksActivity.class).putExtra(Intent.EXTRA_TEXT, artistId).putExtra(Intent.EXTRA_TITLE, artistName);
-//
-//                startActivity(seeTop10Tracks);
 
             }
         });
