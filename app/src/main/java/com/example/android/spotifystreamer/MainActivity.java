@@ -1,5 +1,6 @@
 package com.example.android.spotifystreamer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -10,6 +11,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
     public static String ARTIST_ID_KEY = "artistId";
     public static String ARTIST_NAME_KEY = "artistName";
+    public static String IS_TWO_PANE_KEY = "isTwoPane";
     private boolean mTwoPane;
 
     @Override
@@ -53,11 +55,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             Bundle args = new Bundle();
             args.putString(ARTIST_ID_KEY, id);
             args.putString(ARTIST_NAME_KEY, artistName);
+            args.putBoolean(IS_TWO_PANE_KEY, mTwoPane);
             fragment.setArguments(args);
 
             getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, fragment).commit();
         } else {
-            //TODO: code for phone layout
+            Intent seeTop10Tracks = new Intent(this, Top10TracksActivity.class).putExtra(ARTIST_ID_KEY, id).putExtra(ARTIST_NAME_KEY, artistName).putExtra(IS_TWO_PANE_KEY, mTwoPane);
+            startActivity(seeTop10Tracks);
         }
     }
 }

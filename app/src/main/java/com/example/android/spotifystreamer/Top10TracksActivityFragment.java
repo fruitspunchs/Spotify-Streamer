@@ -6,6 +6,8 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,19 +49,24 @@ public class Top10TracksActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_top10_tracks, container, false);
 
+        String subtitle = "";
+        Boolean isTwoPane = false;
+
         if (getArguments() != null) {
             mId = getArguments().getString(MainActivity.ARTIST_ID_KEY);
+            subtitle = getArguments().getString(MainActivity.ARTIST_NAME_KEY);
+            isTwoPane = getArguments().getBoolean(MainActivity.IS_TWO_PANE_KEY);
         }
-//      String subtitle = getActivity().getIntent().getStringExtra(Intent.EXTRA_TITLE);
 
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar_top_10_tracks);
         mProgressBar.setVisibility(View.GONE);
 
-        //TODO: only change subtitle if one pane layout
-//        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-//        if (actionBar != null) {
-//            actionBar.setSubtitle(subtitle);
-//        }
+        if (!isTwoPane) {
+            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setSubtitle(subtitle);
+            }
+        }
 
         TrackInfo trackInfo = new TrackInfo();
 
@@ -84,9 +91,8 @@ public class Top10TracksActivityFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        //TODO: handle tablet layout
+    public void onStart() {
+        super.onStart();
         searchTop10Albums();
     }
 
