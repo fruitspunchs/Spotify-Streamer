@@ -84,18 +84,10 @@ public class Top10TracksFragment extends Fragment {
             }
         });
 
-        return rootView;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
         searchTop10Albums();
+
+
+        return rootView;
     }
 
     private void searchTop10Albums() {
