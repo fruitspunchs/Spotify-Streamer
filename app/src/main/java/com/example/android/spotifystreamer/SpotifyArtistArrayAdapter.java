@@ -1,6 +1,7 @@
 package com.example.android.spotifystreamer;
 
 import android.app.Activity;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,8 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
             viewHolder = new ViewHolder();
             viewHolder.text = (TextView) convertView.findViewById(mTextViewResourceId);
             viewHolder.image = (ImageView) convertView.findViewById(mImageViewResourceId);
+            viewHolder.randomColorDrawable = Utility.randomColorDrawable();
+
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -51,8 +54,7 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
         viewHolder.text.setText(mArtistInfo.getArtistNames().get(position));
 
         if (mArtistInfo.getArtistImages().get(position).equals("")) {
-            //Icon made by http://www.freepik.com from http://www.flaticon.com is licensed under Creative Commons BY 3.0
-            viewHolder.image.setImageResource(R.mipmap.artist_placeholder);
+            viewHolder.image.setImageDrawable(viewHolder.randomColorDrawable);
         } else {
             Picasso.with(getContext()).load(mArtistInfo.getArtistImages().get(position)).into(viewHolder.image);
         }
@@ -82,6 +84,7 @@ public class SpotifyArtistArrayAdapter extends ArrayAdapter<String> {
     private static class ViewHolder {
         TextView text;
         ImageView image;
+        ColorDrawable randomColorDrawable;
     }
 
 

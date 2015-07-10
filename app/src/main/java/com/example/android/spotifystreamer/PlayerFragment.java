@@ -40,10 +40,10 @@ public class PlayerFragment extends DialogFragment {
 
         ImageView albumImage = (ImageView) rootView.findViewById(R.id.album_image);
         String trackUrl = trackInfo.getMediumThumbnails().get(trackPosition);
-        if (trackUrl != "") {
+        if (!trackUrl.equals("")) {
             Picasso.with(getActivity()).load(trackUrl).into(albumImage);
         } else {
-            albumImage.setImageResource(R.mipmap.album_placeholder);
+            albumImage.setImageDrawable(Utility.randomColorDrawable());
         }
 
         TextView albumText = (TextView) rootView.findViewById(R.id.album_name_textview);
