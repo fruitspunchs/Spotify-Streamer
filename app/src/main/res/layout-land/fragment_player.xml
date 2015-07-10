@@ -16,6 +16,8 @@
         android:layout_gravity="center_horizontal"
         android:layout_weight="4"
         android:background="@color/black"
+        android:maxHeight="300dp"
+        android:maxWidth="300dp"
         tools:minHeight="300dp"
         tools:minWidth="300dp" />
 
