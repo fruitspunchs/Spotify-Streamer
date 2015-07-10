@@ -14,7 +14,14 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.player_fragment_container, new PlayerFragment(), PLAYER_FRAGMENT_TAG).commit();
+        PlayerFragment fragment = new PlayerFragment();
+        Bundle args = new Bundle();
+        args.putString(PlayerFragment.ARTIST_NAME_KEY, getIntent().getStringExtra(PlayerFragment.ARTIST_NAME_KEY));
+        args.putParcelable(PlayerFragment.TRACK_INFO_KEY, getIntent().getParcelableExtra(PlayerFragment.TRACK_INFO_KEY));
+        args.putInt(PlayerFragment.TRACK_POSITION_KEY, getIntent().getIntExtra(PlayerFragment.TRACK_POSITION_KEY, 0));
+        fragment.setArguments(args);
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.player_fragment_container, fragment, PLAYER_FRAGMENT_TAG).commit();
     }
 
     @Override

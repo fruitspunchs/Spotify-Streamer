@@ -25,6 +25,10 @@ public class TrackInfo implements Parcelable {
     private final ArrayList<String> mMediumThumbnails = new ArrayList<>();
     private final ArrayList<String> mTrackPreviewUrls = new ArrayList<>();
 
+    public TrackInfo() {
+
+    }
+
     private TrackInfo(Parcel in) {
         in.readStringList(mTrackNames);
         in.readStringList(mAlbumNames);

@@ -49,7 +49,10 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
 
     @Override
     public void onTrackSelected(String artistName, TrackInfo trackInfo, int pos) {
-        Intent playTrack = new Intent(this, PlayerActivity.class);
+        Intent playTrack = new Intent(this, PlayerActivity.class)
+                .putExtra(PlayerFragment.ARTIST_NAME_KEY, artistName)
+                .putExtra(PlayerFragment.TRACK_INFO_KEY, trackInfo)
+                .putExtra(PlayerFragment.TRACK_POSITION_KEY, pos);
         startActivity(playTrack);
     }
 }

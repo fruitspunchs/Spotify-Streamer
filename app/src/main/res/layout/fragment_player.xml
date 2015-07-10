@@ -30,9 +30,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:background="@color/green"
-        android:minHeight="225dp"
-        android:minWidth="225dp" />
+        android:background="@color/black"
+        android:minHeight="300dp"
+        android:minWidth="300dp"
+        tools:src="@mipmap/album_placeholder" />
 
     <TextView
         android:id="@+id/album_name_textview"

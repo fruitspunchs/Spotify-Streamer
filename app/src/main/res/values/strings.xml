@@ -8,5 +8,5 @@
     <string name="image_view_artist_description">Image of artist</string>
     <string name="image_view_album_description">Image of album</string>
     <string name="toast_no_network_connectivity">Network unavailable</string>
-    <string name="title_activity_player">Track Preview</string>
+    <string name="title_activity_player">Now Playing</string>
 </resources>

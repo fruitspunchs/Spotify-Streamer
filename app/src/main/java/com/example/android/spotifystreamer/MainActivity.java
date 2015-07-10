@@ -69,6 +69,12 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Item
     @Override
     public void onTrackSelected(String artistName, TrackInfo trackInfo, int pos) {
         PlayerFragment fragment = new PlayerFragment();
+        Bundle args = new Bundle();
+        args.putString(PlayerFragment.ARTIST_NAME_KEY, artistName);
+        args.putParcelable(PlayerFragment.TRACK_INFO_KEY, trackInfo);
+        args.putInt(PlayerFragment.TRACK_POSITION_KEY, pos);
+        fragment.setArguments(args);
+
         fragment.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
     }
 }
