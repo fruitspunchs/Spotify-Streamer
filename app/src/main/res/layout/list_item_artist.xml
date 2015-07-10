@@ -20,8 +20,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp"
-            android:background="@color/black"
-            android:src="@mipmap/artist_placeholder" />
+            android:background="@color/black" />
     </FrameLayout>
 
     <FrameLayout
