@@ -37,6 +37,7 @@ public class Top10TracksFragment extends Fragment {
     private String mId;
     private Toast mToast;
     private ProgressBar mProgressBar;
+    private String mArtistName;
 
     public Top10TracksFragment() {
     }
@@ -55,6 +56,7 @@ public class Top10TracksFragment extends Fragment {
         if (getArguments() != null) {
             mId = getArguments().getString(MainActivity.ARTIST_ID_KEY);
             subtitle = getArguments().getString(MainActivity.ARTIST_NAME_KEY);
+            mArtistName = subtitle;
             isTwoPane = getArguments().getBoolean(MainActivity.IS_TWO_PANE_KEY);
         }
 
@@ -68,7 +70,7 @@ public class Top10TracksFragment extends Fragment {
             }
         }
 
-        TrackInfo trackInfo = new TrackInfo();
+        final TrackInfo trackInfo = new TrackInfo();
 
         mSpotifyTracksArrayAdapter = new SpotifyTracksArrayAdapter(getActivity(), trackInfo, R.layout.list_item_tracks, R.id.list_item_track_textview, R.id.list_item_album_textview, R.id.list_item_album_imageview);
 
@@ -78,7 +80,7 @@ public class Top10TracksFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //TODO: Spotify Streamer stage 2 music preview
+                ((ItemSelectedCallback) getActivity()).onTrackSelected(mArtistName, trackInfo, position);
             }
         });
 
@@ -121,6 +123,10 @@ public class Top10TracksFragment extends Fragment {
 
         mToast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
         mToast.show();
+    }
+
+    public interface ItemSelectedCallback {
+        void onTrackSelected(String artistName, TrackInfo trackInfo, int pos);
     }
 
     /**

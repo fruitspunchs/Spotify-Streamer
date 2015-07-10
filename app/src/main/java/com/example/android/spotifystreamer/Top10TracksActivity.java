@@ -1,12 +1,13 @@
 package com.example.android.spotifystreamer;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class Top10TracksActivity extends AppCompatActivity {
+public class Top10TracksActivity extends AppCompatActivity implements Top10TracksFragment.ItemSelectedCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,5 +45,13 @@ public class Top10TracksActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onTrackSelected(String artistName, TrackInfo trackInfo, int pos) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.replace(android.R.id.content, new PlayerFragment())
+                .addToBackStack(null).commit();
     }
 }

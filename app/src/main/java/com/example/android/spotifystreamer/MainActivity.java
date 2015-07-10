@@ -7,11 +7,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends AppCompatActivity implements MainFragment.ItemSelectedCallback {
+public class MainActivity extends AppCompatActivity implements MainFragment.ItemSelectedCallback, Top10TracksFragment.ItemSelectedCallback {
 
     public static String ARTIST_ID_KEY = "artistId";
     public static String ARTIST_NAME_KEY = "artistName";
     public static String IS_TWO_PANE_KEY = "isTwoPane";
+    private static String PLAYER_FRAGMENT_TAG = "playerFragment";
     private boolean mTwoPane;
 
     @Override
@@ -63,5 +64,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Item
             Intent seeTop10Tracks = new Intent(this, Top10TracksActivity.class).putExtra(ARTIST_ID_KEY, id).putExtra(ARTIST_NAME_KEY, artistName).putExtra(IS_TWO_PANE_KEY, mTwoPane);
             startActivity(seeTop10Tracks);
         }
+    }
+
+    @Override
+    public void onTrackSelected(String artistName, TrackInfo trackInfo, int pos) {
+        PlayerFragment fragment = new PlayerFragment();
+        fragment.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
     }
 }
