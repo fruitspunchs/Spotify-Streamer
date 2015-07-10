@@ -61,7 +61,7 @@ public class MainFragment extends Fragment {
                 String artistId = mArtistAdapter.getId(position);
                 String artistName = mArtistAdapter.getItem(position);
 
-                ((ItemSelectedCallback) getActivity()).onItemSelected(artistId, artistName);
+                ((ItemSelectedCallback) getActivity()).onArtistSelected(artistId, artistName);
 
             }
         });
@@ -114,7 +114,7 @@ public class MainFragment extends Fragment {
     }
 
     public interface ItemSelectedCallback {
-        void onItemSelected(String id, String artistName);
+        void onArtistSelected(String id, String artistName);
     }
 
     /**

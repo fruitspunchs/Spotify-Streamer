@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Item
     }
 
     @Override
-    public void onItemSelected(String id, String artistName) {
+    public void onArtistSelected(String id, String artistName) {
         if (mTwoPane) {
             Top10TracksFragment fragment = new Top10TracksFragment();
             Bundle args = new Bundle();
