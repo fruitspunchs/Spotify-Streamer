@@ -2,17 +2,20 @@ package com.example.android.spotifystreamer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends AppCompatActivity implements MainFragment.ItemSelectedCallback, Top10TracksFragment.ItemSelectedCallback {
+public class MainActivity extends AppCompatActivity implements MainFragment.Callback, Top10TracksFragment.ItemSelectedCallback {
 
     public static String ARTIST_ID_KEY = "artistId";
     public static String ARTIST_NAME_KEY = "artistName";
     public static String IS_TWO_PANE_KEY = "isTwoPane";
     private static String PLAYER_FRAGMENT_TAG = "playerFragment";
+    private static String TOP_10_TRACKS_FRAGMENT_TAG = "top10TracksFragment";
     private boolean mTwoPane;
 
     @Override
@@ -20,18 +23,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Item
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (findViewById(R.id.top10tracks_container) != null) {
-            // The detail container view will be present only in the large-screen layouts
-            // (res/layout-sw600dp). If this view is present, then the activity should be
-            // in two-pane mode.
-            mTwoPane = true;
-
-            if (savedInstanceState == null) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, new Top10TracksFragment()).commit();
-            }
-        } else {
-            mTwoPane = false;
-        }
+        // The detail container view will be present only in the large-screen layouts
+// (res/layout-sw600dp). If this view is present, then the activity should be
+// in two-pane mode.
+        mTwoPane = findViewById(R.id.top10tracks_container) != null;
     }
 
     @Override
@@ -59,10 +54,19 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Item
             args.putBoolean(IS_TWO_PANE_KEY, mTwoPane);
             fragment.setArguments(args);
 
-            getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, fragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, fragment, TOP_10_TRACKS_FRAGMENT_TAG).commit();
         } else {
             Intent seeTop10Tracks = new Intent(this, Top10TracksActivity.class).putExtra(ARTIST_ID_KEY, id).putExtra(ARTIST_NAME_KEY, artistName).putExtra(IS_TWO_PANE_KEY, mTwoPane);
             startActivity(seeTop10Tracks);
+        }
+    }
+
+    @Override
+    public void onArtistSearch() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(TOP_10_TRACKS_FRAGMENT_TAG);
+        if (null != fragment) {
+            fragmentManager.beginTransaction().remove(fragment).commit();
         }
     }
 

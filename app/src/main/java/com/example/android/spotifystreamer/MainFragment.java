@@ -61,7 +61,7 @@ public class MainFragment extends Fragment {
                 String artistId = mArtistAdapter.getId(position);
                 String artistName = mArtistAdapter.getItem(position);
 
-                ((ItemSelectedCallback) getActivity()).onArtistSelected(artistId, artistName);
+                ((Callback) getActivity()).onArtistSelected(artistId, artistName);
 
             }
         });
@@ -71,7 +71,10 @@ public class MainFragment extends Fragment {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
+                ((Callback) getActivity()).onArtistSearch();
+                mArtistAdapter.clear();
                 searchArtists(query);
+                listView.clearChoices();
                 return false;
             }
 
@@ -113,8 +116,10 @@ public class MainFragment extends Fragment {
         mToast.show();
     }
 
-    public interface ItemSelectedCallback {
+    public interface Callback {
         void onArtistSelected(String id, String artistName);
+
+        void onArtistSearch();
     }
 
     /**
