@@ -30,9 +30,14 @@ import retrofit.RetrofitError;
  */
 public class MainFragment extends Fragment {
 
+    private static String ARTIST_INFO_KEY = "artistInfo";
+    private static String SELECTED_POS_KEY = "selectedPos";
     private SpotifyArtistArrayAdapter mArtistAdapter;
     private Toast mToast;
     private ProgressBar mProgressBar;
+    private ArtistInfo mArtistInfo;
+    private int mSelectedPos = ListView.INVALID_POSITION;
+    private ListView mListView;
 
     public MainFragment() {
     }
@@ -46,20 +51,27 @@ public class MainFragment extends Fragment {
         final String LOG_TAG = this.getClass().getSimpleName();
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ArtistInfo mArtistInfo = new ArtistInfo();
+        if (null == savedInstanceState) {
+            mArtistInfo = new ArtistInfo();
+        } else {
+            mArtistInfo = savedInstanceState.getParcelable(ARTIST_INFO_KEY);
+            mSelectedPos = savedInstanceState.getInt(SELECTED_POS_KEY);
+        }
+
         mArtistAdapter = new SpotifyArtistArrayAdapter(getActivity(), mArtistInfo, R.layout.list_item_artist, R.id.list_item_artist_textview, R.id.list_item_artist_imageview);
 
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar_artist_search);
         mProgressBar.setVisibility(View.GONE);
 
-        final ListView listView = (ListView) rootView.findViewById(R.id.list_view_artist);
-        listView.setAdapter(mArtistAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView = (ListView) rootView.findViewById(R.id.list_view_artist);
+        mListView.setAdapter(mArtistAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 String artistId = mArtistAdapter.getId(position);
                 String artistName = mArtistAdapter.getItem(position);
+                mSelectedPos = position;
 
                 ((Callback) getActivity()).onArtistSelected(artistId, artistName);
 
@@ -74,7 +86,7 @@ public class MainFragment extends Fragment {
                 ((Callback) getActivity()).onArtistSearch();
                 mArtistAdapter.clear();
                 searchArtists(query);
-                listView.clearChoices();
+                mListView.clearChoices();
                 return false;
             }
 
@@ -88,8 +100,20 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(ARTIST_INFO_KEY, mArtistInfo);
+        outState.putInt(SELECTED_POS_KEY, mSelectedPos);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mArtistAdapter.notifyDataSetChanged();
+
+        if (mSelectedPos != ListView.INVALID_POSITION) {
+            mListView.smoothScrollToPosition(mSelectedPos);
+        }
     }
 
     private void searchArtists(String query) {
