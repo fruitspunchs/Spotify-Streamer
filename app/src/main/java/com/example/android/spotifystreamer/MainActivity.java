@@ -23,9 +23,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // The detail container view will be present only in the large-screen layouts
-// (res/layout-sw600dp). If this view is present, then the activity should be
-// in two-pane mode.
         mTwoPane = findViewById(R.id.top10tracks_container) != null;
     }
 
