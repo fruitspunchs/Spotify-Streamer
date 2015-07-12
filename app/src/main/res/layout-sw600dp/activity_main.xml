@@ -15,7 +15,7 @@
         android:name="com.example.android.spotifystreamer.MainFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="2"
+        android:layout_weight="@integer/main_fragment_layout_weight"
         tools:layout="@layout/fragment_main" />
 
     <FrameLayout

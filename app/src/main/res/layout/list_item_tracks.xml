@@ -37,7 +37,8 @@
             android:gravity="bottom"
             android:singleLine="true"
             android:text="Track Name"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/text_size" />
 
         <TextView
             android:id="@+id/list_item_album_textview"
@@ -47,7 +48,8 @@
             android:layout_weight="1"
             android:singleLine="true"
             android:text="Album Name"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/text_size" />
     </LinearLayout>
 
 </LinearLayout>

@@ -8,7 +8,7 @@
 
     <supports-screens
         android:largeScreens="true"
-        android:xlargeScreens="true" />
+        android:xlargeScreens="true"/>
 
     <application
         android:allowBackup="true"
