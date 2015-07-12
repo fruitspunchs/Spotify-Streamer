@@ -33,11 +33,16 @@ import retrofit.RetrofitError;
  */
 public class Top10TracksFragment extends Fragment {
 
+    private final static String TRACK_INFO_KEY = "trackInfo";
+    private static String SELECTED_POS_KEY = "selectedPos";
     private SpotifyTracksArrayAdapter mSpotifyTracksArrayAdapter;
     private String mId;
     private Toast mToast;
     private ProgressBar mProgressBar;
     private String mArtistName;
+    private TrackInfo mTrackInfo;
+    private int mSelectedPos = ListView.INVALID_POSITION;
+    private ListView mListView;
 
     public Top10TracksFragment() {
     }
@@ -70,24 +75,47 @@ public class Top10TracksFragment extends Fragment {
             }
         }
 
-        final TrackInfo trackInfo = new TrackInfo();
+        if (null == savedInstanceState) {
+            mTrackInfo = new TrackInfo();
+        } else {
+            mTrackInfo = savedInstanceState.getParcelable(TRACK_INFO_KEY);
+            mSelectedPos = savedInstanceState.getInt(SELECTED_POS_KEY);
+        }
 
-        mSpotifyTracksArrayAdapter = new SpotifyTracksArrayAdapter(getActivity(), trackInfo, R.layout.list_item_tracks, R.id.list_item_track_textview, R.id.list_item_album_textview, R.id.list_item_album_imageview);
+        mSpotifyTracksArrayAdapter = new SpotifyTracksArrayAdapter(getActivity(), mTrackInfo, R.layout.list_item_tracks, R.id.list_item_track_textview, R.id.list_item_album_textview, R.id.list_item_album_imageview);
 
 
-        final ListView listView = (ListView) rootView.findViewById(R.id.list_view_tracks);
-        listView.setAdapter(mSpotifyTracksArrayAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView = (ListView) rootView.findViewById(R.id.list_view_tracks);
+        mListView.setAdapter(mSpotifyTracksArrayAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ((ItemSelectedCallback) getActivity()).onTrackSelected(mArtistName, trackInfo, position);
+                ((ItemSelectedCallback) getActivity()).onTrackSelected(mArtistName, mTrackInfo, position);
+                mSelectedPos = position;
             }
         });
 
-        searchTop10Albums();
+        if (mTrackInfo.isEmpty()) {
+            searchTop10Albums();
+        }
 
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(TRACK_INFO_KEY, mTrackInfo);
+        outState.putInt(SELECTED_POS_KEY, mSelectedPos);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mSelectedPos != ListView.INVALID_POSITION) {
+            mListView.smoothScrollToPosition(mSelectedPos);
+        }
     }
 
     private void searchTop10Albums() {
@@ -152,6 +180,7 @@ public class Top10TracksFragment extends Fragment {
         protected void onPostExecute(List<Track> tracks) {
             super.onPostExecute(tracks);
             mProgressBar.setVisibility(View.GONE);
+            mSpotifyTracksArrayAdapter.clear();
             if (tracks != null) {
                 if (tracks.isEmpty()) {
                     displayToast(getString(R.string.toast_no_tracks_found));

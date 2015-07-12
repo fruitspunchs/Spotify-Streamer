@@ -37,6 +37,10 @@ public class TrackInfo implements Parcelable {
         in.readStringList(mTrackPreviewUrls);
     }
 
+    public boolean isEmpty() {
+        return mTrackNames.isEmpty();
+    }
+
     @Override
     public int describeContents() {
         return 0;
