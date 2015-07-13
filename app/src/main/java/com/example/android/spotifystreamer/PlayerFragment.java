@@ -75,11 +75,15 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
     }
 
     private void playTrack(String urlString) {
-        try {
-            mMediaPlayer.setDataSource(urlString);
-            mMediaPlayer.prepareAsync();
-        } catch (IOException e) {
-            Utility.displayToast(getActivity(), getString(R.string.error_unable_to_play_track));
+        if (Utility.isNetworkConnected(getActivity())) {
+            try {
+                mMediaPlayer.setDataSource(urlString);
+                mMediaPlayer.prepareAsync();
+            } catch (IOException e) {
+                Utility.displayToast(getActivity(), getString(R.string.error_unable_to_play_track));
+            }
+        } else {
+            Utility.displayToast(getActivity(), getString(R.string.toast_no_network_connectivity));
         }
     }
 
@@ -130,6 +134,7 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Utility.displayToast(getActivity(), getString(R.string.error_playback));
+        resetMedia();
         return false;
     }
 }
