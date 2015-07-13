@@ -8,7 +8,7 @@
 
     <supports-screens
         android:largeScreens="true"
-        android:xlargeScreens="true"/>
+        android:xlargeScreens="true" />
 
     <application
         android:allowBackup="true"
@@ -40,6 +40,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.android.spotifystreamer.Top10TracksActivity" />
         </activity>
+
+        <service
+            android:name=".MediaPlayerService"
+            android:exported="false" />
     </application>
 
 </manifest>
