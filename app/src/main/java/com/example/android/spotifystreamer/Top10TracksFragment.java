@@ -1,8 +1,5 @@
 package com.example.android.spotifystreamer;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -121,12 +118,7 @@ public class Top10TracksFragment extends Fragment {
             return;
         }
 
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-
-        if (isConnected) {
+        if (Utility.isNetworkConnected(getActivity())) {
             mProgressBar.setVisibility(View.VISIBLE);
             new FetchTop10Albums().execute(mId);
         } else {
