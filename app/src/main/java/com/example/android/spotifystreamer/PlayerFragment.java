@@ -33,6 +33,7 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.setRetainInstance(true);
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
 
         String artistName = getArguments().getString(ARTIST_NAME_KEY);
@@ -65,13 +66,8 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
         mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.setOnErrorListener(this);
 
-        return rootView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
         playTrack(mTrackInfo.getTrackPreviewUrls().get(mTrackPosition));
+        return rootView;
     }
 
     private void playTrack(String urlString) {
