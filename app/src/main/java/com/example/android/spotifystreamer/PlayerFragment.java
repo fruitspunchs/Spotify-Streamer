@@ -14,7 +14,6 @@ import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -28,7 +27,6 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
     private TrackInfo mTrackInfo;
     private int mTrackPosition;
     private MediaPlayer mMediaPlayer;
-    private Toast mToast;
     private ImageButton mPlayPauseButton;
     private boolean isResetFromError = false;
 
@@ -81,7 +79,7 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
             mMediaPlayer.setDataSource(urlString);
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {
-            Utility.displayToast(getActivity(), mToast, getString(R.string.error_unable_to_play_track));
+            Utility.displayToast(getActivity(), getString(R.string.error_unable_to_play_track));
         }
     }
 
@@ -131,7 +129,7 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        Utility.displayToast(getActivity(), mToast, getString(R.string.error_playback));
+        Utility.displayToast(getActivity(), getString(R.string.error_playback));
         return false;
     }
 }

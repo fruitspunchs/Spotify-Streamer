@@ -11,18 +11,19 @@ import java.util.Random;
  * Helper classes
  */
 public class Utility {
-    private static Random randomNumber = new Random();
+    private static Random sRandomNumber = new Random();
+    private static Toast sToast;
 
     public static ColorDrawable randomColorDrawable() {
-        return new ColorDrawable(Color.rgb(randomNumber.nextInt(256), randomNumber.nextInt(256), randomNumber.nextInt(256)));
+        return new ColorDrawable(Color.rgb(sRandomNumber.nextInt(256), sRandomNumber.nextInt(256), sRandomNumber.nextInt(256)));
     }
 
-    public static void displayToast(Context context, Toast toast, String message) {
-        if (toast != null) {
-            toast.cancel();
+    public static void displayToast(Context context, String message) {
+        if (sToast != null) {
+            sToast.cancel();
         }
 
-        toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
-        toast.show();
+        sToast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+        sToast.show();
     }
 }
