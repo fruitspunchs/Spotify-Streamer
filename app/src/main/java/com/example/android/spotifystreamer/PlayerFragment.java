@@ -30,6 +30,7 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
     private MediaPlayer mMediaPlayer;
     private Toast mToast;
     private ImageButton mPlayPauseButton;
+    private boolean isResetFromError = false;
 
     @Nullable
     @Override
@@ -110,7 +111,11 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        playMedia();
+        if (!isResetFromError) {
+            playMedia();
+        } else {
+            isResetFromError = false;
+        }
     }
 
     @Override
@@ -118,9 +123,15 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
         mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
     }
 
+    private void resetMedia() {
+        isResetFromError = true;
+        mMediaPlayer.reset();
+        playTrack(mTrackInfo.getTrackPreviewUrls().get(mTrackPosition));
+    }
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        //TODO: handle no network connectivity in other code
+        Utility.displayToast(getActivity(), mToast, getString(R.string.error_playback));
         return false;
     }
 }
