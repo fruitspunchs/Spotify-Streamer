@@ -36,6 +36,10 @@ public class Utility {
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
 
+        if (!isConnected) {
+            displayToast(context, context.getString(R.string.toast_no_network_connectivity));
+        }
+
         return isConnected;
 
     }

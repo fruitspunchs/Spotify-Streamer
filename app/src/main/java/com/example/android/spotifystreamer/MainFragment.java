@@ -115,8 +115,6 @@ public class MainFragment extends Fragment {
         if (Utility.isNetworkConnected(getActivity())) {
             mProgressBar.setVisibility(View.VISIBLE);
             new FetchArtistTask().execute(query);
-        } else {
-            Utility.displayToast(getActivity(), getString(R.string.toast_no_network_connectivity));
         }
     }
 

@@ -121,8 +121,6 @@ public class Top10TracksFragment extends Fragment {
         if (Utility.isNetworkConnected(getActivity())) {
             mProgressBar.setVisibility(View.VISIBLE);
             new FetchTop10Albums().execute(mId);
-        } else {
-            Utility.displayToast(getActivity(), getString(R.string.toast_no_network_connectivity));
         }
     }
 

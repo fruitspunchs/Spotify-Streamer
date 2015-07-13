@@ -33,7 +33,6 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.setRetainInstance(true);
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
 
         String artistName = getArguments().getString(ARTIST_NAME_KEY);
@@ -78,8 +77,6 @@ public class PlayerFragment extends DialogFragment implements MediaPlayer.OnPrep
             } catch (IOException e) {
                 Utility.displayToast(getActivity(), getString(R.string.error_unable_to_play_track));
             }
-        } else {
-            Utility.displayToast(getActivity(), getString(R.string.toast_no_network_connectivity));
         }
     }
 
