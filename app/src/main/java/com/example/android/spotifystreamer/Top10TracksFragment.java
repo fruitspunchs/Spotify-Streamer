@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +36,6 @@ public class Top10TracksFragment extends Fragment {
     private static String SELECTED_POS_KEY = "selectedPos";
     private SpotifyTracksArrayAdapter mSpotifyTracksArrayAdapter;
     private String mId;
-    private Toast mToast;
     private ProgressBar mProgressBar;
     private String mArtistName;
     private TrackInfo mTrackInfo;
@@ -132,17 +130,8 @@ public class Top10TracksFragment extends Fragment {
             mProgressBar.setVisibility(View.VISIBLE);
             new FetchTop10Albums().execute(mId);
         } else {
-            displayToast(getString(R.string.toast_no_network_connectivity));
+            Utility.displayToast(getActivity(), getString(R.string.toast_no_network_connectivity));
         }
-    }
-
-    private void displayToast(String message) {
-        if (mToast != null) {
-            mToast.cancel();
-        }
-
-        mToast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
-        mToast.show();
     }
 
     public interface ItemSelectedCallback {
@@ -169,7 +158,7 @@ public class Top10TracksFragment extends Fragment {
                 results = spotify.getArtistTopTrack(ids[0], map);
             } catch (RetrofitError error) {
                 SpotifyError spotifyError = SpotifyError.fromRetrofitError(error);
-                displayToast(spotifyError.getMessage());
+                Utility.displayToast(getActivity(), spotifyError.getMessage());
                 return null;
             }
 
@@ -183,7 +172,7 @@ public class Top10TracksFragment extends Fragment {
             mSpotifyTracksArrayAdapter.clear();
             if (tracks != null) {
                 if (tracks.isEmpty()) {
-                    displayToast(getString(R.string.toast_no_tracks_found));
+                    Utility.displayToast(getActivity(), getString(R.string.toast_no_tracks_found));
                     return;
                 }
 
