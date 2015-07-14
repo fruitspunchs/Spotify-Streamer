@@ -112,6 +112,7 @@ public class MainFragment extends Fragment {
     }
 
     private void searchArtists(String query) {
+        //TODO: temp debug code
         if (Utility.isNetworkConnected(getActivity())) {
             mProgressBar.setVisibility(View.VISIBLE);
             new FetchArtistTask().execute(query);
@@ -130,6 +131,9 @@ public class MainFragment extends Fragment {
     public class FetchArtistTask extends AsyncTask<String, Void, List<Artist>> {
         private final String LOG_TAG = FetchArtistTask.class.getSimpleName();
 
+        boolean hasCaughtError = false;
+        String errorString;
+
         @Override
         protected List<Artist> doInBackground(String... artist) {
             ArtistsPager results;
@@ -140,7 +144,8 @@ public class MainFragment extends Fragment {
                 results = spotify.searchArtists(artist[0]);
             } catch (RetrofitError error) {
                 SpotifyError spotifyError = SpotifyError.fromRetrofitError(error);
-                Utility.displayToast(getActivity(), spotifyError.getMessage());
+                hasCaughtError = true;
+                errorString = spotifyError.getMessage();
                 return null;
             }
 
@@ -152,6 +157,10 @@ public class MainFragment extends Fragment {
             super.onPostExecute(artists);
             mArtistAdapter.clear();
             mProgressBar.setVisibility(View.GONE);
+
+            if (hasCaughtError) {
+                Utility.displayToast(getActivity(), errorString);
+            }
 
             if (artists != null) {
                 if (artists.isEmpty()) {

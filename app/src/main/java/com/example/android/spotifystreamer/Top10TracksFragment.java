@@ -133,6 +133,8 @@ public class Top10TracksFragment extends Fragment {
      */
     public class FetchTop10Albums extends AsyncTask<String, Void, List<Track>> {
         private final String LOG_TAG = FetchTop10Albums.class.getSimpleName();
+        boolean hasCaughtError = false;
+        String errorString;
 
         @Override
         protected List<Track> doInBackground(String... ids) {
@@ -148,7 +150,8 @@ public class Top10TracksFragment extends Fragment {
                 results = spotify.getArtistTopTrack(ids[0], map);
             } catch (RetrofitError error) {
                 SpotifyError spotifyError = SpotifyError.fromRetrofitError(error);
-                Utility.displayToast(getActivity(), spotifyError.getMessage());
+                hasCaughtError = true;
+                errorString = spotifyError.getMessage();
                 return null;
             }
 
@@ -160,6 +163,11 @@ public class Top10TracksFragment extends Fragment {
             super.onPostExecute(tracks);
             mProgressBar.setVisibility(View.GONE);
             mSpotifyTracksArrayAdapter.clear();
+
+            if (hasCaughtError) {
+                Utility.displayToast(getActivity(), errorString);
+            }
+
             if (tracks != null) {
                 if (tracks.isEmpty()) {
                     Utility.displayToast(getActivity(), getString(R.string.toast_no_tracks_found));
