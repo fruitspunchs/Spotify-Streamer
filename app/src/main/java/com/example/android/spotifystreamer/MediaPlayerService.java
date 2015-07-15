@@ -34,7 +34,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private static final int MUSIC_PLAYER_NOTIFICATION_ID = 100;
     private static String LOG_TAG;
     private MediaPlayer mMediaPlayer;
-    private boolean misRecoveringFromError = false;
+    private boolean mIsRecoveringFromError = false;
     private String mArtistName;
     private TrackInfo mTrackInfo;
     private int mTrackPosition;
@@ -45,7 +45,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private ServiceHandler mServiceHandler;
 
     private NotificationManagerCompat mNotificationManager;
-    private NotificationCompat.Builder mNotficationBuilder;
+    private NotificationCompat.Builder mNotificationBuilder;
     private Intent mNotificationIntent;
 
     @Override
@@ -66,9 +66,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mMediaPlayer.setScreenOnWhilePlaying(true);
 
         mNotificationManager = NotificationManagerCompat.from(this);
-        mNotficationBuilder = new NotificationCompat.Builder(this);
+        mNotificationBuilder = new NotificationCompat.Builder(this);
 
-        //TODO:restore player state
         if (this.getResources().getBoolean(R.bool.wide_layout)) {
             mNotificationIntent = new Intent(this, MainActivity.class);
         } else {
@@ -80,7 +79,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, mNotificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mNotficationBuilder.setContentIntent(pendingIntent);
+        mNotificationBuilder.setContentIntent(pendingIntent);
+        mNotificationBuilder.setPriority(NotificationCompat.PRIORITY_MAX);
     }
 
     @Override
@@ -96,11 +96,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         msg.obj = intent;
         mServiceHandler.sendMessage(msg);
 
-        mNotficationBuilder.setSmallIcon(R.mipmap.ic_launcher)
+        mNotificationBuilder.setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(mTrackInfo.getTrackNames().get(mTrackPosition));
 
-        Notification notification = mNotficationBuilder.build();
+        Notification notification = mNotificationBuilder.build();
 
         this.startForeground(MUSIC_PLAYER_NOTIFICATION_ID, notification);
 
@@ -112,8 +112,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                mNotficationBuilder.setLargeIcon(bitmap);
-                mNotificationManager.notify(MUSIC_PLAYER_NOTIFICATION_ID, mNotficationBuilder.build());
+                mNotificationBuilder.setLargeIcon(bitmap);
+                mNotificationManager.notify(MUSIC_PLAYER_NOTIFICATION_ID, mNotificationBuilder.build());
             }
 
             @Override
@@ -162,10 +162,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onPrepared(MediaPlayer mp) {
         mIsPrepared = true;
 
-        if (!misRecoveringFromError) {
+        if (!mIsRecoveringFromError) {
             playMedia();
         } else {
-            misRecoveringFromError = false;
+            mIsRecoveringFromError = false;
         }
     }
 
@@ -177,7 +177,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     private void resetMediaOnError() {
-        misRecoveringFromError = true;
+        mIsRecoveringFromError = true;
         resetMedia();
         playTrack(mTrackInfo.getTrackPreviewUrls().get(mTrackPosition));
     }
