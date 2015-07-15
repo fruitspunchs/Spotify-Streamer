@@ -79,4 +79,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
 
         fragment.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, MediaPlayerService.class);
+        stopService(intent);
+    }
 }
