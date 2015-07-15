@@ -80,7 +80,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, mNotificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         mNotificationBuilder.setContentIntent(pendingIntent);
-        mNotificationBuilder.setPriority(NotificationCompat.PRIORITY_MAX);
+        mNotificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
     }
 
     @Override
