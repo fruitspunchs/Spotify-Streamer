@@ -53,6 +53,7 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
                 .putExtra(PlayerFragment.ARTIST_NAME_KEY, artistName)
                 .putExtra(PlayerFragment.TRACK_INFO_KEY, trackInfo)
                 .putExtra(PlayerFragment.TRACK_POSITION_KEY, pos);
+        playTrack.setAction(PlayerFragment.ACTION_FIRST_LAUNCH_FROM_ACTIVITY);
         startActivity(playTrack);
     }
 }

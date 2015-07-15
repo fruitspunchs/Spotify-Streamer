@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         args.putString(PlayerFragment.ARTIST_NAME_KEY, artistName);
         args.putParcelable(PlayerFragment.TRACK_INFO_KEY, trackInfo);
         args.putInt(PlayerFragment.TRACK_POSITION_KEY, pos);
+        args.putBoolean(PlayerFragment.DIALOG_FIRST_OPEN_KEY, true);
         fragment.setArguments(args);
 
         fragment.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);

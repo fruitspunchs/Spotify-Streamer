@@ -21,6 +21,13 @@ public class PlayerFragment extends DialogFragment {
     public static String TRACK_INFO_KEY = "trackInfo";
     public static String TRACK_POSITION_KEY = "trackPosition";
 
+    public static String DIALOG_FIRST_OPEN_KEY = "dialogFirstOpen";
+
+    public static String ACTION_LAUNCH_FROM_NOTIFICATION = "com.example.android.spotifystreamer.ACTION_LAUNCH_FROM_NOTIFICATION";
+    public static String ACTION_FIRST_LAUNCH_FROM_ACTIVITY = "com.example.android.spotifystreamer.ACTION_FIRST_LAUNCH_FROM_ACTIVITY";
+    public static String ACTION_NON_FIRST_LAUNCH_FROM_ACTIVITY = "com.example.android.spotifystreamer.ACTION_NON_FIRST_LAUNCH_FROM_ACTIVITY";
+    boolean mIsFirstDialogOpen = false;
+    private String mArtistName;
     private TrackInfo mTrackInfo;
     private int mTrackPosition;
     private ImageButton mPlayPauseButton;
@@ -30,12 +37,18 @@ public class PlayerFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
 
-        String artistName = getArguments().getString(ARTIST_NAME_KEY);
-        mTrackInfo = getArguments().getParcelable(TRACK_INFO_KEY);
-        mTrackPosition = getArguments().getInt(TRACK_POSITION_KEY);
+        if (null == savedInstanceState) {
+            mArtistName = getArguments().getString(ARTIST_NAME_KEY);
+            mTrackInfo = getArguments().getParcelable(TRACK_INFO_KEY);
+            mTrackPosition = getArguments().getInt(TRACK_POSITION_KEY);
+        } else {
+            mArtistName = savedInstanceState.getString(ARTIST_NAME_KEY);
+            mTrackInfo = savedInstanceState.getParcelable(TRACK_INFO_KEY);
+            mTrackPosition = savedInstanceState.getInt(TRACK_POSITION_KEY);
+        }
 
         TextView artistText = (TextView) rootView.findViewById(R.id.artist_name_textview);
-        artistText.setText(artistName);
+        artistText.setText(mArtistName);
 
         TextView trackText = (TextView) rootView.findViewById(R.id.track_name_textview);
         trackText.setText(mTrackInfo.getTrackNames().get(mTrackPosition));
@@ -53,10 +66,28 @@ public class PlayerFragment extends DialogFragment {
 
         mPlayPauseButton = (ImageButton) rootView.findViewById(R.id.play_pause_button);
 
-        Intent intent = new Intent(MediaPlayerService.ACTION_PLAY, null, getActivity(), MediaPlayerService.class).putExtra(TRACK_INFO_KEY, mTrackInfo).putExtra(TRACK_POSITION_KEY, mTrackPosition);
-        getActivity().startService(intent);
+
+        if (mIsFirstDialogOpen) {
+            Intent intent = new Intent(MediaPlayerService.ACTION_PLAY, null, getActivity(), MediaPlayerService.class).putExtra(TRACK_INFO_KEY, mTrackInfo).putExtra(TRACK_POSITION_KEY, mTrackPosition).putExtra(ARTIST_NAME_KEY, mArtistName);
+            getActivity().startService(intent);
+            getArguments().putBoolean(DIALOG_FIRST_OPEN_KEY, false);
+        } else if (getActivity().getIntent() != null) {
+            if (getActivity().getIntent().getAction().equals(ACTION_FIRST_LAUNCH_FROM_ACTIVITY)) {
+                Intent intent = new Intent(MediaPlayerService.ACTION_PLAY, null, getActivity(), MediaPlayerService.class).putExtra(TRACK_INFO_KEY, mTrackInfo).putExtra(TRACK_POSITION_KEY, mTrackPosition).putExtra(ARTIST_NAME_KEY, mArtistName);
+                getActivity().startService(intent);
+                getActivity().getIntent().setAction(ACTION_NON_FIRST_LAUNCH_FROM_ACTIVITY);
+            }
+        }
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(ARTIST_NAME_KEY, mArtistName);
+        outState.putParcelable(TRACK_INFO_KEY, mTrackInfo);
+        outState.putInt(TRACK_POSITION_KEY, mTrackPosition);
+        super.onSaveInstanceState(outState);
     }
 
     @NonNull
@@ -64,6 +95,9 @@ public class PlayerFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        mIsFirstDialogOpen = getArguments().getBoolean(DIALOG_FIRST_OPEN_KEY);
+
         return dialog;
     }
 }
