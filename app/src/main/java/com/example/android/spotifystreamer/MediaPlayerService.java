@@ -16,6 +16,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.support.v4.media.RatingCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -33,11 +34,13 @@ import java.io.IOException;
  * Service that streams music given a url
  */
 public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
-    public static final String ACTION_PLAY = "com.example.android.spotifystreamer.PLAY";
-    public static final String ACTION_PAUSE = "com.example.android.spotifystreamer.PAUSE";
-    public static final String ACTION_NEXT = "com.example.android.spotifystreamer.NEXT";
-    public static final String ACTION_PREVIOUS = "com.example.android.spotifystreamer.PREVIOUS";
-    public static final String ACTION_STOP = "com.example.android.spotifystreamer.STOP";
+    public static final String ACTION_PLAY = "PLAY";
+    public static final String ACTION_PAUSE = "PAUSE";
+    public static final String ACTION_NEXT = "NEXT";
+    public static final String ACTION_PREVIOUS = "PREVIOUS";
+    public static final String ACTION_STOP = "STOP";
+
+    public static final String EVENT_MEDIA = "";
 
 
     private static final int MUSIC_PLAYER_NOTIFICATION_ID = 100;
@@ -94,7 +97,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.setOnErrorListener(this);
-        mMediaPlayer.setScreenOnWhilePlaying(true);
+        mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
 
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -280,8 +283,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onDestroy() {
         Log.d(LOG_TAG, "Service destroyed");
         mNotificationManager.cancel(MUSIC_PLAYER_NOTIFICATION_ID);
-        mMediaPlayer.release();
-        mSession.release();
+
+        if (mMediaPlayer != null) {
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+
+        if (mSession != null) {
+            mSession.release();
+        }
     }
 
     @Override
@@ -289,9 +299,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         return null;
     }
 
-    private void playTrack(String urlString) {
+    private void loadTrack(String urlString) {
         if (Utility.isNetworkConnected(this)) {
             try {
+                mIsPrepared = false;
                 mMediaPlayer.setDataSource(urlString);
                 mMediaPlayer.prepareAsync();
             } catch (IOException e) {
@@ -302,7 +313,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private void playMedia() {
         mMediaPlayer.start();
-        //mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
     }
 
     private void pauseMedia() {
@@ -328,7 +338,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private void resetMediaOnError() {
         mIsRecoveringFromError = true;
         resetMedia();
-        playTrack(mTrackInfo.getTrackPreviewUrls().get(mTrackPosition));
+        loadTrack(mTrackInfo.getTrackPreviewUrls().get(mTrackPosition));
     }
 
     private void resetMedia() {
@@ -371,7 +381,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                             resetMedia();
 
                         mNowPlayingUrl = intentTrackUrl;
-                        playTrack(mNowPlayingUrl);
+                        loadTrack(mNowPlayingUrl);
                     }
                 } else if (action.equals(ACTION_PAUSE)) {
                     pauseMedia();
