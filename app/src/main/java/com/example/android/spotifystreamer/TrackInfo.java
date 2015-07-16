@@ -37,6 +37,26 @@ public class TrackInfo implements Parcelable {
         in.readStringList(mTrackPreviewUrls);
     }
 
+    public int getNextTrackIndex(int currentPosition) {
+        int nextItem = currentPosition + 1;
+
+        if (nextItem > mTrackNames.size() - 1) {
+            return 0;
+        } else {
+            return nextItem;
+        }
+    }
+
+    public int getPreviousTrackIndex(int currentPosition) {
+        int previousItem = currentPosition - 1;
+
+        if (previousItem < 0) {
+            return mTrackNames.size() - 1;
+        } else {
+            return previousItem;
+        }
+    }
+
     public boolean isEmpty() {
         return mTrackNames.isEmpty();
     }
