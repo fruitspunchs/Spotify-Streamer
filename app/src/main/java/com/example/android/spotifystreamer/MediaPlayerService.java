@@ -178,12 +178,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private void initMediaSessions() {
 
         //TODO: test on pre lollipop device
-        mSession = new MediaSessionCompat(getApplicationContext(), "simple player session", new ComponentName(this, MediaPlayerService.class), null);
+        mSession = new MediaSessionCompat(getApplicationContext(), "Media Player Session", new ComponentName(this, MediaPlayerService.class), null);
 
         try {
             mController = new MediaControllerCompat(getApplicationContext(), mSession.getSessionToken());
         } catch (RemoteException e) {
-
+            e.printStackTrace();
+            stopSelf();
         }
 
         mSession.setCallback(new MediaSessionCompat.Callback() {
