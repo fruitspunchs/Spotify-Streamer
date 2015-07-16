@@ -15,6 +15,8 @@
     <string name="title_activity_player">Now Playing</string>
     <string name="title_activity_top10_tracks">Top 10 Tracks</string>
 
+    <string name="notification_title">Now playing</string>
+
     <string name="error_unable_to_play_track">Unable to play track.</string>
     <string name="error_playback">Playback error.</string>
 </resources>
