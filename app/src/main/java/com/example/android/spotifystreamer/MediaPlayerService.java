@@ -3,6 +3,7 @@ package com.example.android.spotifystreamer;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -102,7 +103,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
         Intent deleteIntent = new Intent(getApplicationContext(), MediaPlayerService.class);
         deleteIntent.setAction(ACTION_STOP);
-        PendingIntent pendingDeleteIntent = PendingIntent.getService(getApplicationContext(), 0, deleteIntent, 0);
+        PendingIntent pendingDeleteIntent = PendingIntent.getService(getApplicationContext(), 0, deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent selectIntent;
         if (getApplication().getResources().getBoolean(R.bool.wide_layout)) {
@@ -114,7 +115,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                     .putExtra(PlayerFragment.TRACK_POSITION_KEY, mTrackPosition);
             selectIntent.setAction(PlayerFragment.ACTION_LAUNCH_FROM_NOTIFICATION);
         }
-        PendingIntent pendingSelectIntent = PendingIntent.getActivity(getApplicationContext(), 0, selectIntent, 0);
+        PendingIntent pendingSelectIntent = PendingIntent.getActivity(getApplicationContext(), 0, selectIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mNotificationBuilder = new NotificationCompat.Builder(this);
         mNotificationBuilder.setSmallIcon(R.mipmap.ic_launcher)
@@ -148,7 +149,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private NotificationCompat.Action generateAction(int icon, String title, String intentAction) {
         Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
         intent.setAction(intentAction);
-        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return new NotificationCompat.Action.Builder(icon, title, pendingIntent).build();
     }
 
@@ -176,8 +177,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private void initMediaSessions() {
 
-        //TODO: modify to support pre lollipop devices
-        mSession = new MediaSessionCompat(getApplicationContext(), "simple player session", null, null);
+        //TODO: test on pre lollipop device
+        mSession = new MediaSessionCompat(getApplicationContext(), "simple player session", new ComponentName(this, MediaPlayerService.class), null);
 
         try {
             mController = new MediaControllerCompat(getApplicationContext(), mSession.getSessionToken());
@@ -205,6 +206,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
                                      buildNotification(generateAction(android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
                                  }
+
 
                                  @Override
                                  public void onSkipToNext() {
