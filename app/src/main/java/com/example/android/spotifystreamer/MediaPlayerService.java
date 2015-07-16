@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.session.MediaSessionManager;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -63,6 +64,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private NotificationCompat.Builder mNotificationBuilder;
     private NotificationCompat.MediaStyle mMediaStyle;
     private NotificationManager mNotificationManager;
+
+    private WifiManager.WifiLock mWifiLock;
 
     private Target mTarget = new Target() {
         @Override
@@ -128,6 +131,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 .setStyle(mMediaStyle);
 
         initMediaSessions();
+
+        mWifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
+                .createWifiLock(WifiManager.WIFI_MODE_FULL, "Spotify Streamer");
+        mWifiLock.setReferenceCounted(false);
     }
 
     private void handleIntent(Intent intent) {
@@ -236,6 +243,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                  public void onStop() {
                                      super.onStop();
                                      Log.d("MediaPlayerService", "onStop");
+                                     mWifiLock.release();
                                      stopSelf();
                                  }
 
@@ -292,6 +300,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         if (mSession != null) {
             mSession.release();
         }
+
+        if (mWifiLock != null) {
+            mWifiLock.release();
+        }
     }
 
     @Override
@@ -304,6 +316,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             try {
                 mIsPrepared = false;
                 mMediaPlayer.setDataSource(urlString);
+                mWifiLock.acquire();
                 mMediaPlayer.prepareAsync();
             } catch (IOException e) {
                 Utility.displayToast(this, getString(R.string.error_unable_to_play_track));
@@ -316,6 +329,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     private void pauseMedia() {
+        mWifiLock.release();
         mMediaPlayer.pause();
     }
 
@@ -332,6 +346,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        mWifiLock.release();
         buildNotification(generateAction(android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
     }
 
