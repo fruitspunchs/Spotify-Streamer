@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.session.MediaSessionManager;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -19,7 +18,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.RemoteException;
-import android.support.v4.media.RatingCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.NotificationCompat;
@@ -30,34 +29,41 @@ import com.squareup.picasso.Target;
 
 import java.io.IOException;
 
+//TODO: handle AUDIO_BECOMING_NOISY
+//TODO: handle audio focus
 
 /**
- * Service that streams music given a url
+ * Streams tracks and shows a notification with music player controls
  */
-public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
+public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
     public static final String ACTION_PLAY = "PLAY";
     public static final String ACTION_PAUSE = "PAUSE";
     public static final String ACTION_NEXT = "NEXT";
     public static final String ACTION_PREVIOUS = "PREVIOUS";
     public static final String ACTION_STOP = "STOP";
 
-    public static final String EVENT_MEDIA = "";
+    public static final String MEDIA_EVENT = "MEDIA_EVENT";
+    public static final String MEDIA_EVENT_KEY = "MEDIA_EVENT_KEY";
 
+    public static final String MEDIA_EVENT_BUFFERING = "MEDIA_EVENT_BUFFERING";
+    public static final String BUFFER_PERCENT_KEY = "BUFFER_PERCENT_KEY";
+
+    public static final String MEDIA_EVENT_TRACK_PROGRESS = "MEDIA_EVENT_TRACK_PROGRESS";
+    public static final String TRACK_PROGRESS_KEY = "TRACK_PROGRESS_KEY";
 
     private static final int MUSIC_PLAYER_NOTIFICATION_ID = 100;
+
     private static String LOG_TAG;
-    private boolean mIsRecoveringFromError = false;
+    private final int mTrackProgressUpdateDelay = 100; //milliseconds
     private String mArtistName;
     private TrackInfo mTrackInfo;
     private int mTrackPosition;
     private String mNowPlayingUrl = "";
+    private boolean mIsRecoveringFromError = false;
     private boolean mIsPrepared = false;
-
-    private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
-
+    private Handler mTrackProgressUpdateHandler;
     private MediaPlayer mMediaPlayer;
-    private MediaSessionManager mManager;
     private MediaSessionCompat mSession;
     private MediaControllerCompat mController;
 
@@ -92,14 +98,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         HandlerThread thread = new HandlerThread("MediaPlayerThread");
         thread.start();
 
-        mServiceLooper = thread.getLooper();
-        mServiceHandler = new ServiceHandler(mServiceLooper);
+        Looper serviceLooper = thread.getLooper();
+        mServiceHandler = new ServiceHandler(serviceLooper);
 
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.setOnErrorListener(this);
+        mMediaPlayer.setOnBufferingUpdateListener(this);
         mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
 
 
@@ -128,6 +135,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 .setContentTitle(getString(R.string.notification_title))
                 .setContentIntent(pendingSelectIntent)
                 .setDeleteIntent(pendingDeleteIntent)
+                .setShowWhen(false)
                 .setStyle(mMediaStyle);
 
         initMediaSessions();
@@ -135,6 +143,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mWifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
                 .createWifiLock(WifiManager.WIFI_MODE_FULL, "Spotify Streamer");
         mWifiLock.setReferenceCounted(false);
+
+        mTrackProgressUpdateHandler = new Handler();
     }
 
     private void handleIntent(Intent intent) {
@@ -179,7 +189,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mNotificationManager.notify(MUSIC_PLAYER_NOTIFICATION_ID, mNotificationBuilder.build());
     }
 
-    private void sendMessage(String action) {
+    private void sendMessageToServiceHandler(String action) {
         Message msg = mServiceHandler.obtainMessage();
         msg.obj = action;
         mServiceHandler.sendMessage(msg);
@@ -187,7 +197,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private void initMediaSessions() {
 
-        //TODO: test on pre lollipop device
+        //TODO: Test on pre lollipop device
         mSession = new MediaSessionCompat(getApplicationContext(), "Media Player Session", new ComponentName(this, MediaPlayerService.class), null);
 
         try {
@@ -203,9 +213,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                      super.onPlay();
                                      Log.d("MediaPlayerService", "onPlay");
 
-                                     sendMessage(ACTION_PLAY);
+                                     sendMessageToServiceHandler(ACTION_PLAY);
 
                                      buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", ACTION_PAUSE));
+                                     broadcastMessage(ACTION_PLAY);
                                  }
 
                                  @Override
@@ -213,9 +224,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                      super.onPause();
                                      Log.d("MediaPlayerService", "onPause");
 
-                                     sendMessage(ACTION_PAUSE);
+                                     sendMessageToServiceHandler(ACTION_PAUSE);
 
                                      buildNotification(generateAction(android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
+                                     broadcastMessage(ACTION_PAUSE);
                                  }
 
 
@@ -224,7 +236,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                      super.onSkipToNext();
                                      Log.d("MediaPlayerService", "onSkipToNext");
 
-                                     sendMessage(ACTION_PLAY);
+                                     broadcastMessage(ACTION_NEXT, PlayerFragment.TRACK_POSITION_KEY, mTrackPosition);
+                                     sendMessageToServiceHandler(ACTION_NEXT);
 
                                      buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", ACTION_PAUSE));
                                  }
@@ -234,7 +247,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                      super.onSkipToPrevious();
                                      Log.d("MediaPlayerService", "onSkipToPrevious");
 
-                                     sendMessage(ACTION_PLAY);
+                                     broadcastMessage(ACTION_PREVIOUS, PlayerFragment.TRACK_POSITION_KEY, mTrackPosition);
+                                     sendMessageToServiceHandler(ACTION_PREVIOUS);
 
                                      buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", ACTION_PAUSE));
                                  }
@@ -243,6 +257,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                  public void onStop() {
                                      super.onStop();
                                      Log.d("MediaPlayerService", "onStop");
+                                     broadcastMessage(ACTION_PAUSE);
                                      mWifiLock.release();
                                      stopSelf();
                                  }
@@ -250,11 +265,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                  @Override
                                  public void onSeekTo(long pos) {
                                      super.onSeekTo(pos);
-                                 }
-
-                                 @Override
-                                 public void onSetRating(RatingCompat rating) {
-                                     super.onSetRating(rating);
                                  }
                              }
         );
@@ -270,10 +280,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "Service started");
 
-        if (intent.hasExtra(PlayerFragment.ARTIST_NAME_KEY) && intent.hasExtra(PlayerFragment.TRACK_INFO_KEY) && intent.hasExtra(PlayerFragment.TRACK_POSITION_KEY)) {
-            mArtistName = intent.getStringExtra(PlayerFragment.ARTIST_NAME_KEY);
-            mTrackInfo = intent.getParcelableExtra(PlayerFragment.TRACK_INFO_KEY);
-            mTrackPosition = intent.getIntExtra(PlayerFragment.TRACK_POSITION_KEY, -1);
+        if (intent != null) {
+            if (intent.hasExtra(PlayerFragment.ARTIST_NAME_KEY) && intent.hasExtra(PlayerFragment.TRACK_INFO_KEY) && intent.hasExtra(PlayerFragment.TRACK_POSITION_KEY)) {
+                mArtistName = intent.getStringExtra(PlayerFragment.ARTIST_NAME_KEY);
+                mTrackInfo = intent.getParcelableExtra(PlayerFragment.TRACK_INFO_KEY);
+                mTrackPosition = intent.getIntExtra(PlayerFragment.TRACK_POSITION_KEY, -1);
+            }
         }
 
         if (intent.getAction().equals(ACTION_NEXT)) {
@@ -326,6 +338,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private void playMedia() {
         mMediaPlayer.start();
+
+        mTrackProgressUpdateHandler.postDelayed(new Runnable() {
+            public void run() {
+                if (mIsPrepared) {
+                    if (mMediaPlayer.isPlaying()) {
+                        mTrackProgressUpdateHandler.postDelayed(this, mTrackProgressUpdateDelay);
+                        int duration = mMediaPlayer.getDuration();
+                        float progress = ((float) mMediaPlayer.getCurrentPosition() / (float) duration) * 100;
+                        broadcastMessage(MEDIA_EVENT_TRACK_PROGRESS, TRACK_PROGRESS_KEY, (int) progress);
+                    }
+                }
+            }
+        }, mTrackProgressUpdateDelay);
     }
 
     private void pauseMedia() {
@@ -348,12 +373,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onCompletion(MediaPlayer mp) {
         mWifiLock.release();
         buildNotification(generateAction(android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
+        broadcastMessage(ACTION_PAUSE);
     }
 
     private void resetMediaOnError() {
         mIsRecoveringFromError = true;
         resetMedia();
         loadTrack(mTrackInfo.getTrackPreviewUrls().get(mTrackPosition));
+        broadcastMessage(ACTION_PAUSE);
     }
 
     private void resetMedia() {
@@ -375,6 +402,28 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         stopSelf();
     }
 
+    @Override
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+        broadcastMessage(MEDIA_EVENT_BUFFERING, BUFFER_PERCENT_KEY, percent);
+    }
+
+    private void broadcastMessage(String message) {
+        Log.d(LOG_TAG, "Broadcasting message: " + message);
+        Intent intent = new Intent(MEDIA_EVENT);
+
+        intent.putExtra(MEDIA_EVENT_KEY, message);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void broadcastMessage(String message, String key, int value) {
+        Log.d(LOG_TAG, "Broadcasting message: " + message);
+        Intent intent = new Intent(MEDIA_EVENT);
+
+        intent.putExtra(MEDIA_EVENT_KEY, message);
+        intent.putExtra(key, value);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -385,9 +434,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         public void handleMessage(Message msg) {
             synchronized (this) {
                 String action = (String) msg.obj;
+                String intentTrackUrl = mTrackInfo.getTrackPreviewUrls().get(mTrackPosition);
 
                 if (action.equals(ACTION_PLAY)) {
-                    String intentTrackUrl = mTrackInfo.getTrackPreviewUrls().get(mTrackPosition);
 
                     if (mNowPlayingUrl.equals(intentTrackUrl) && mIsPrepared) {
                         playMedia();
@@ -400,6 +449,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                     }
                 } else if (action.equals(ACTION_PAUSE)) {
                     pauseMedia();
+                } else if (action.equals(ACTION_NEXT) || action.equals(ACTION_PREVIOUS)) {
+                    resetMedia();
+                    mNowPlayingUrl = intentTrackUrl;
+                    loadTrack(mNowPlayingUrl);
                 }
             }
         }
