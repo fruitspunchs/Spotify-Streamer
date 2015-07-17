@@ -45,8 +45,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public static final String MEDIA_EVENT = "MEDIA_EVENT";
     public static final String MEDIA_EVENT_KEY = "MEDIA_EVENT_KEY";
 
-    public static final String MEDIA_EVENT_BUFFERING = "MEDIA_EVENT_BUFFERING";
-    public static final String BUFFER_PERCENT_KEY = "BUFFER_PERCENT_KEY";
+    public static final String MEDIA_EVENT_BUFFERING_PROGRESS = "MEDIA_EVENT_BUFFERING_PROGRESS";
+    public static final String BUFFER_PROGRESS_KEY = "BUFFER_PROGRESS_KEY";
 
     public static final String MEDIA_EVENT_TRACK_PROGRESS = "MEDIA_EVENT_TRACK_PROGRESS";
     public static final String TRACK_PROGRESS_KEY = "TRACK_PROGRESS_KEY";
@@ -341,7 +341,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
         mTrackProgressUpdateHandler.postDelayed(new Runnable() {
             public void run() {
-                if (mIsPrepared) {
+                if (mIsPrepared && mMediaPlayer != null) {
                     if (mMediaPlayer.isPlaying()) {
                         mTrackProgressUpdateHandler.postDelayed(this, mTrackProgressUpdateDelay);
                         int duration = mMediaPlayer.getDuration();
@@ -404,7 +404,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        broadcastMessage(MEDIA_EVENT_BUFFERING, BUFFER_PERCENT_KEY, percent);
+        broadcastMessage(MEDIA_EVENT_BUFFERING_PROGRESS, BUFFER_PROGRESS_KEY, percent);
     }
 
     private void broadcastMessage(String message) {
