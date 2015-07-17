@@ -39,23 +39,30 @@ public class PlayerFragment extends DialogFragment {
 
     private TextView mArtistText;
     private TextView mTrackText;
+    private TextView mAlbumText;
     private ImageView mAlbumImage;
     private ImageButton mPlayPauseButton;
     private ImageButton mPreviousButton;
     private ImageButton mNextButton;
     private SeekBar mTrackSeekBar;
+
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra(MediaPlayerService.MEDIA_EVENT_KEY);
-            Log.d(LOG_TAG, "Got message: " + message);
+            if (!message.equals(MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS)) {
+                Log.d(LOG_TAG, "Got message: " + message);
+            }
 
             switch (message) {
                 case MediaPlayerService.ACTION_PLAY:
                     mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+                    mPlayPauseButton.setTag(MediaPlayerService.ACTION_PAUSE);
                     break;
                 case MediaPlayerService.ACTION_PAUSE:
                     mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
+                    mPlayPauseButton.setTag(MediaPlayerService.ACTION_PLAY);
                     break;
                 case MediaPlayerService.ACTION_NEXT:
                     mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
@@ -67,8 +74,8 @@ public class PlayerFragment extends DialogFragment {
                     mTrackPosition = intent.getIntExtra(TRACK_POSITION_KEY, 0);
                     populatePlayerView(mTrackPosition);
                     break;
-                case MediaPlayerService.MEDIA_EVENT_BUFFERING:
-                    int bufferPercent = intent.getIntExtra(MediaPlayerService.BUFFER_PERCENT_KEY, 0);
+                case MediaPlayerService.MEDIA_EVENT_BUFFERING_PROGRESS:
+                    int bufferPercent = intent.getIntExtra(MediaPlayerService.BUFFER_PROGRESS_KEY, 0);
                     mTrackSeekBar.setSecondaryProgress(bufferPercent);
                     break;
                 case MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS:
@@ -96,9 +103,6 @@ public class PlayerFragment extends DialogFragment {
             mTrackPosition = savedInstanceState.getInt(TRACK_POSITION_KEY);
         }
 
-        mTrackSeekBar = (SeekBar) rootView.findViewById(R.id.track_seekbar);
-        mTrackSeekBar.setMax(100);
-
         mArtistText = (TextView) rootView.findViewById(R.id.artist_name_textview);
         mArtistText.setText(mArtistName);
 
@@ -113,13 +117,16 @@ public class PlayerFragment extends DialogFragment {
             mAlbumImage.setImageDrawable(Utility.randomColorDrawable());
         }
 
-        TextView albumText = (TextView) rootView.findViewById(R.id.album_name_textview);
-        albumText.setText(mTrackInfo.getAlbumNames().get(mTrackPosition));
+        mAlbumText = (TextView) rootView.findViewById(R.id.album_name_textview);
+        mAlbumText.setText(mTrackInfo.getAlbumNames().get(mTrackPosition));
 
         mPlayPauseButton = (ImageButton) rootView.findViewById(R.id.play_pause_button);
         mPreviousButton = (ImageButton) rootView.findViewById(R.id.previous_button);
         mNextButton = (ImageButton) rootView.findViewById(R.id.next_button);
+        mTrackSeekBar = (SeekBar) rootView.findViewById(R.id.track_seekbar);
+        mTrackSeekBar.setMax(100);
 
+        setPlayerControlListeners();
 
         if (mIsFirstDialogOpen) {
             Intent intent = new Intent(MediaPlayerService.ACTION_PLAY, null, getActivity(), MediaPlayerService.class).putExtra(TRACK_INFO_KEY, mTrackInfo).putExtra(TRACK_POSITION_KEY, mTrackPosition).putExtra(ARTIST_NAME_KEY, mArtistName);
@@ -139,11 +146,66 @@ public class PlayerFragment extends DialogFragment {
         return rootView;
     }
 
+    private void setPlayerControlListeners() {
+        mPlayPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mPlayPauseButton.getTag().equals(MediaPlayerService.ACTION_PLAY)) {
+                    Intent intent = new Intent(getActivity(), MediaPlayerService.class).setAction(MediaPlayerService.ACTION_PLAY);
+                    getActivity().startService(intent);
+                } else if (mPlayPauseButton.getTag().equals(MediaPlayerService.ACTION_PAUSE)) {
+                    Intent intent = new Intent(getActivity(), MediaPlayerService.class).setAction(MediaPlayerService.ACTION_PAUSE);
+                    getActivity().startService(intent);
+                } else {
+                    Log.d(LOG_TAG, "No tag set to play pause button");
+                }
+            }
+        });
+
+        mPreviousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), MediaPlayerService.class).setAction(MediaPlayerService.ACTION_PREVIOUS);
+                getActivity().startService(intent);
+            }
+        });
+
+        mNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), MediaPlayerService.class).setAction(MediaPlayerService.ACTION_NEXT);
+                getActivity().startService(intent);
+            }
+        });
+
+        mTrackSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    Log.d(LOG_TAG, "User seek");
+                    Intent intent = new Intent(getActivity(), MediaPlayerService.class).setAction(MediaPlayerService.ACTION_SEEK).putExtra(MediaPlayerService.TRACK_SEEK_POSITION_KEY, progress);
+                    getActivity().startService(intent);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+    }
+
     private void populatePlayerView(int trackPosition) {
         mTrackSeekBar.setProgress(0);
         mTrackSeekBar.setSecondaryProgress(0);
         mArtistText.setText(mArtistName);
         mTrackText.setText(mTrackInfo.getTrackNames().get(trackPosition));
+        mAlbumText.setText(mTrackInfo.getAlbumNames().get(mTrackPosition));
         String trackUrl = mTrackInfo.getMediumThumbnails().get(trackPosition);
         if (!trackUrl.equals("")) {
             Picasso.with(getActivity()).load(trackUrl).into(mAlbumImage);
