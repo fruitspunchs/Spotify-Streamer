@@ -2,6 +2,7 @@
   <dictionary name="User">
     <words>
       <w>spotify</w>
+      <w>spotifystreamer</w>
     </words>
   </dictionary>
 </component>
