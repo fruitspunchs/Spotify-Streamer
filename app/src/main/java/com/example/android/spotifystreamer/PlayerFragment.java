@@ -32,7 +32,8 @@ public class PlayerFragment extends DialogFragment {
     public static String ACTION_FIRST_LAUNCH_FROM_ACTIVITY = "com.example.android.spotifystreamer.ACTION_FIRST_LAUNCH_FROM_ACTIVITY";
     public static String ACTION_NON_FIRST_LAUNCH_FROM_ACTIVITY = "com.example.android.spotifystreamer.ACTION_NON_FIRST_LAUNCH_FROM_ACTIVITY";
     private static String LOG_TAG;
-    boolean mIsFirstDialogOpen = false;
+    private boolean mIsFirstDialogOpen = false;
+    private boolean mIsDialogMode = false;
     private String mArtistName;
     private TrackInfo mTrackInfo;
     private int mTrackPosition;
@@ -74,6 +75,13 @@ public class PlayerFragment extends DialogFragment {
                     mTrackPosition = intent.getIntExtra(TRACK_POSITION_KEY, 0);
                     populatePlayerView(mTrackPosition);
                     break;
+                case MediaPlayerService.ACTION_STOP:
+                    if (mIsDialogMode) {
+                        dismiss();
+                    } else {
+                        getActivity().finish();
+                    }
+                    break;
                 case MediaPlayerService.MEDIA_EVENT_BUFFERING_PROGRESS:
                     int bufferPercent = intent.getIntExtra(MediaPlayerService.BUFFER_PROGRESS_KEY, 0);
                     mTrackSeekBar.setSecondaryProgress(bufferPercent);
@@ -93,15 +101,9 @@ public class PlayerFragment extends DialogFragment {
 
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
 
-        if (null == savedInstanceState) {
-            mArtistName = getArguments().getString(ARTIST_NAME_KEY);
-            mTrackInfo = getArguments().getParcelable(TRACK_INFO_KEY);
-            mTrackPosition = getArguments().getInt(TRACK_POSITION_KEY);
-        } else {
-            mArtistName = savedInstanceState.getString(ARTIST_NAME_KEY);
-            mTrackInfo = savedInstanceState.getParcelable(TRACK_INFO_KEY);
-            mTrackPosition = savedInstanceState.getInt(TRACK_POSITION_KEY);
-        }
+        mArtistName = getArguments().getString(ARTIST_NAME_KEY);
+        mTrackInfo = getArguments().getParcelable(TRACK_INFO_KEY);
+        mTrackPosition = getArguments().getInt(TRACK_POSITION_KEY);
 
         mArtistText = (TextView) rootView.findViewById(R.id.artist_name_textview);
         mArtistText.setText(mArtistName);
@@ -214,14 +216,6 @@ public class PlayerFragment extends DialogFragment {
         }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putString(ARTIST_NAME_KEY, mArtistName);
-        outState.putParcelable(TRACK_INFO_KEY, mTrackInfo);
-        outState.putInt(TRACK_POSITION_KEY, mTrackPosition);
-        super.onSaveInstanceState(outState);
-    }
-
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -229,6 +223,7 @@ public class PlayerFragment extends DialogFragment {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         mIsFirstDialogOpen = getArguments().getBoolean(DIALOG_FIRST_OPEN_KEY);
+        mIsDialogMode = true;
 
         return dialog;
     }
