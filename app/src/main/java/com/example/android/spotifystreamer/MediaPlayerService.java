@@ -566,7 +566,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                             broadcastMessage(MEDIA_EVENT_PLAYING, TRACK_URL_KEY, mNowPlayingUrl);
                         } else {
                             broadcastMessage(MEDIA_EVENT_NOT_PLAYING);
-                            stopSelf();
                         }
                         break;
                 }
