@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +26,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     private String LOG_TAG;
     private boolean mTwoPane;
     private MenuItem nowPlayingMenuItem;
+
+    private MenuItem mShareItem;
+    private ShareActionProvider mShareActionProvider;
+
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -33,11 +40,14 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
             }
 
             switch (message) {
-                case MediaPlayerService.MEDIA_EVENT_PLAYER_SERVICE_STARTED:
+                case MediaPlayerService.MEDIA_EVENT_PLAYING:
                     nowPlayingMenuItem.setVisible(true);
+                    mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
+                    mShareItem.setVisible(true);
                     break;
-                case MediaPlayerService.MEDIA_EVENT_PLAYER_SERVICE_STOPPED:
+                case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
                     nowPlayingMenuItem.setVisible(false);
+                    mShareItem.setVisible(false);
                     break;
                 case MediaPlayerService.MEDIA_EVENT_REPLY_NOW_PLAYING:
                     Intent showPlayerIntent;
@@ -114,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         nowPlayingMenuItem = menu.findItem(R.id.action_now_playing);
+        mShareItem = menu.findItem(R.id.menu_item_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareItem);
         return super.onPrepareOptionsMenu(menu);
     }
 
