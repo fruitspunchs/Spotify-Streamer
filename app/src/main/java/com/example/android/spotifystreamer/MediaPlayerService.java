@@ -32,7 +32,6 @@ import java.io.Serializable;
 
 //TODO: handle AUDIO_BECOMING_NOISY
 //TODO: handle audio focus
-//TODO: notify player of load amount
 
 /**
  * Streams tracks and shows a notification with music player controls
@@ -102,7 +101,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             mNotificationBuilder.setLargeIcon(bitmap);
-            mNotificationManager.notify(MUSIC_PLAYER_NOTIFICATION_ID, mNotificationBuilder.build());
+            if (Utility.isNotificationsEnabled(getApplicationContext())) {
+                mNotificationManager.notify(MUSIC_PLAYER_NOTIFICATION_ID, mNotificationBuilder.build());
+            }
         }
 
         @Override
@@ -232,7 +233,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
         Picasso.with(this).load(mTrackInfo.getMediumThumbnails().get(mTrackPosition)).into(mImageTarget);
 
-        mNotificationManager.notify(MUSIC_PLAYER_NOTIFICATION_ID, mNotificationBuilder.build());
+        if (Utility.isNotificationsEnabled(getApplicationContext())) {
+            mNotificationManager.notify(MUSIC_PLAYER_NOTIFICATION_ID, mNotificationBuilder.build());
+        }
     }
 
     private void sendMessageToServiceHandler(String action) {
