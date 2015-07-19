@@ -56,6 +56,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public static final String TRACK_PROGRESS_KEY = "TRACK_PROGRESS_KEY";
 
     public static final String MEDIA_EVENT_PLAYING = "MEDIA_EVENT_PLAYING";
+    public static final String TRACK_URL_KEY = "TRACK_URL_KEY";
+
     public static final String MEDIA_EVENT_NOT_PLAYING = "MEDIA_EVENT_NOT_PLAYING";
     public static final String MEDIA_EVENT_REQUEST_NOW_PLAYING = "MEDIA_EVENT_REQUEST_NOW_PLAYING";
     public static final String MEDIA_EVENT_REPLY_NOW_PLAYING = "MEDIA_EVENT_REPLY_NOW_PLAYING";
@@ -384,7 +386,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 mMediaPlayer.setDataSource(urlString);
                 mWifiLock.acquire();
                 mMediaPlayer.prepareAsync();
-                broadcastMessage(MEDIA_EVENT_PLAYING);
+                broadcastMessage(MEDIA_EVENT_PLAYING, TRACK_URL_KEY, mNowPlayingUrl);
 
             } catch (IOException e) {
                 Utility.displayToast(this, getString(R.string.error_unable_to_play_track));
@@ -561,7 +563,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                         break;
                     case MEDIA_EVENT_IS_TRACK_LOADED:
                         if (!mNowPlayingUrl.equals("")) {
-                            broadcastMessage(MEDIA_EVENT_PLAYING);
+                            broadcastMessage(MEDIA_EVENT_PLAYING, TRACK_URL_KEY, mNowPlayingUrl);
                         } else {
                             broadcastMessage(MEDIA_EVENT_NOT_PLAYING);
                             stopSelf();
