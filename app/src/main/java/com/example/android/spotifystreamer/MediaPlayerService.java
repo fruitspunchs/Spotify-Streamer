@@ -55,8 +55,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public static final String MEDIA_EVENT_TRACK_PROGRESS = "MEDIA_EVENT_TRACK_PROGRESS";
     public static final String TRACK_PROGRESS_KEY = "TRACK_PROGRESS_KEY";
 
-    public static final String MEDIA_EVENT_PLAYER_SERVICE_STARTED = "MEDIA_EVENT_PLAYER_SERVICE_STARTED";
-    public static final String MEDIA_EVENT_PLAYER_SERVICE_STOPPED = "MEDIA_EVENT_PLAYER_SERVICE_STOPPED";
+    public static final String MEDIA_EVENT_PLAYING = "MEDIA_EVENT_PLAYING";
+    public static final String MEDIA_EVENT_NOT_PLAYING = "MEDIA_EVENT_NOT_PLAYING";
     public static final String MEDIA_EVENT_REQUEST_NOW_PLAYING = "MEDIA_EVENT_REQUEST_NOW_PLAYING";
     public static final String MEDIA_EVENT_REPLY_NOW_PLAYING = "MEDIA_EVENT_REPLY_NOW_PLAYING";
     public static final String MEDIA_EVENT_IS_TRACK_LOADED = "MEDIA_EVENT_IS_TRACK_LOADED";
@@ -310,7 +310,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                      super.onStop();
                                      Log.d(LOG_TAG, "onStop");
                                      broadcastMessage(ACTION_STOP);
-                                     broadcastMessage(MEDIA_EVENT_PLAYER_SERVICE_STOPPED);
+                                     broadcastMessage(MEDIA_EVENT_NOT_PLAYING);
                                      mWifiLock.release();
                                      stopSelf();
                                  }
@@ -384,7 +384,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 mMediaPlayer.setDataSource(urlString);
                 mWifiLock.acquire();
                 mMediaPlayer.prepareAsync();
-                broadcastMessage(MEDIA_EVENT_PLAYER_SERVICE_STARTED);
+                broadcastMessage(MEDIA_EVENT_PLAYING);
 
             } catch (IOException e) {
                 Utility.displayToast(this, getString(R.string.error_unable_to_play_track));
@@ -561,9 +561,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                         break;
                     case MEDIA_EVENT_IS_TRACK_LOADED:
                         if (!mNowPlayingUrl.equals("")) {
-                            broadcastMessage(MEDIA_EVENT_PLAYER_SERVICE_STARTED);
+                            broadcastMessage(MEDIA_EVENT_PLAYING);
                         } else {
-                            broadcastMessage(MEDIA_EVENT_PLAYER_SERVICE_STOPPED);
+                            broadcastMessage(MEDIA_EVENT_NOT_PLAYING);
                             stopSelf();
                         }
                         break;

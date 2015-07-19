@@ -26,10 +26,10 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
             }
 
             switch (message) {
-                case MediaPlayerService.MEDIA_EVENT_PLAYER_SERVICE_STARTED:
+                case MediaPlayerService.MEDIA_EVENT_PLAYING:
                     nowPlayingMenuItem.setVisible(true);
                     break;
-                case MediaPlayerService.MEDIA_EVENT_PLAYER_SERVICE_STOPPED:
+                case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
                     nowPlayingMenuItem.setVisible(false);
                     break;
                 case MediaPlayerService.MEDIA_EVENT_REPLY_NOW_PLAYING:
