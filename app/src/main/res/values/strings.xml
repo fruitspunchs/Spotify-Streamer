@@ -3,6 +3,7 @@
 
     <string name="action_settings">Settings</string>
     <string name="action_now_playing">Now Playing</string>
+    <string name="action_share">Share</string>
 
     <string name="search_view_artist_hint">Search for artists</string>
 
