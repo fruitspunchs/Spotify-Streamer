@@ -127,6 +127,10 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
                 Intent intent = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_EVENT_REQUEST_NOW_PLAYING);
                 startService(intent);
                 break;
+            case R.id.action_settings:
+                intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
