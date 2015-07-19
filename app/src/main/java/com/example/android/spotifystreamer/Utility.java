@@ -59,4 +59,9 @@ public class Utility {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(context.getString(R.string.pref_notifications_key), context.getResources().getBoolean(R.bool.pref_notifications_default));
     }
+
+    public static String getCountryCodeSetting(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(context.getString(R.string.pref_country_key), context.getString(R.string.pref_country_code_default));
+    }
 }

@@ -145,7 +145,7 @@ public class Top10TracksFragment extends Fragment {
                 SpotifyService spotify = api.getService();
 
                 Map<String, Object> map = new HashMap<>();
-                map.put("country", "PH");
+                map.put("country", Utility.getCountryCodeSetting(getActivity()));
 
                 results = spotify.getArtistTopTrack(ids[0], map);
             } catch (RetrofitError error) {
