@@ -15,7 +15,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-
+/*
+ * Holds MainFragment and if on tablet Top10TracksFragment.
+ */
 public class MainActivity extends AppCompatActivity implements MainFragment.Callback, Top10TracksFragment.ItemSelectedCallback {
 
     public static String ARTIST_ID_KEY = "artistId";
@@ -30,17 +32,20 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     private MenuItem mShareItem;
     private ShareActionProvider mShareActionProvider;
 
-
+    /*
+     * Listens for MediaPlayerService broadcasts.
+     */
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra(MediaPlayerService.MEDIA_EVENT_KEY);
-            if (!message.equals(MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS)) {
+            if (!message.equals(MediaPlayerService.MEDIA_TRACK_PROGRESS)) {
                 Log.d(LOG_TAG, "Got message: " + message);
             }
 
             switch (message) {
-                case MediaPlayerService.MEDIA_EVENT_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_TRACK_LOADED:
+                    //if media player service has a track loaded show Now Playing and Share Actions
                     if (mNowPlayingMenuItem != null) {
                         mNowPlayingMenuItem.setVisible(true);
                     }
@@ -51,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
                         mShareItem.setVisible(true);
                     }
                     break;
-                case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_TRACK_NOT_LOADED:
+                    //ii media player service has no track loaded hide Now Playing and Share Actions
                     if (mNowPlayingMenuItem != null) {
                         mNowPlayingMenuItem.setVisible(false);
                     }
@@ -59,7 +65,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
                         mShareItem.setVisible(false);
                     }
                     break;
-                case MediaPlayerService.MEDIA_EVENT_REPLY_NOW_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_CURRENT_TRACK_STATUS:
+                    //if Now Playing item is clicked, show music player
                     Intent showPlayerIntent;
                     String artistName = intent.getStringExtra(PlayerFragment.ARTIST_NAME_KEY);
                     TrackInfo trackInfo = intent.getParcelableExtra(PlayerFragment.TRACK_INFO_KEY);
@@ -69,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
                     int seekBarPosition = intent.getIntExtra(MediaPlayerService.TRACK_PROGRESS_KEY, 0);
 
                     if (mTwoPane) {
+                        //if tablet layout show a dialog
                         PlayerFragment fragment = new PlayerFragment();
                         Bundle args = new Bundle();
                         args.putString(PlayerFragment.ARTIST_NAME_KEY, artistName);
@@ -81,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
                         fragment.setArguments(args);
                         fragment.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
                     } else {
+                        //if phone layout start a activity
                         showPlayerIntent = new Intent(getApplicationContext(), PlayerActivity.class);
                         showPlayerIntent.putExtra(PlayerFragment.ARTIST_NAME_KEY, artistName)
                                 .putExtra(PlayerFragment.TRACK_INFO_KEY, trackInfo)
@@ -109,11 +118,13 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     @Override
     protected void onResume() {
         super.onResume();
+        //listen for media player service broadcasts
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(MediaPlayerService.MEDIA_EVENT));
 
+        //ask if media player has a track loaded
         if (mNowPlayingMenuItem != null) {
-            Intent requestServiceIsTrackLoaded = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_EVENT_IS_TRACK_LOADED);
+            Intent requestServiceIsTrackLoaded = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_REQUEST_IS_TRACK_LOADED);
             startService(requestServiceIsTrackLoaded);
         }
     }
@@ -121,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     @Override
     protected void onPause() {
         super.onPause();
+        //stop listening for broadcasts
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     }
 
@@ -128,22 +140,17 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
         mNowPlayingMenuItem = menu.findItem(R.id.action_now_playing);
         mShareItem = menu.findItem(R.id.menu_item_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareItem);
-        return super.onPrepareOptionsMenu(menu);
+        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_now_playing:
-                Intent intent = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_EVENT_REQUEST_NOW_PLAYING);
+                Intent intent = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_REQUEST_CURRENT_TRACK_STATUS);
                 startService(intent);
                 break;
             case R.id.action_settings:
@@ -154,9 +161,13 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         return super.onOptionsItemSelected(item);
     }
 
+    /*
+     * Shows Top10Tracks
+     */
     @Override
     public void onArtistSelected(String id, String artistName) {
         if (mTwoPane) {
+            //Attach fragment if tablet layout
             Top10TracksFragment fragment = new Top10TracksFragment();
             Bundle args = new Bundle();
             args.putString(ARTIST_ID_KEY, id);
@@ -166,11 +177,15 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
 
             getSupportFragmentManager().beginTransaction().replace(R.id.top10tracks_container, fragment, TOP_10_TRACKS_FRAGMENT_TAG).commit();
         } else {
+            //Start activity if phone
             Intent seeTop10Tracks = new Intent(this, Top10TracksActivity.class).putExtra(ARTIST_ID_KEY, id).putExtra(ARTIST_NAME_KEY, artistName).putExtra(IS_TWO_PANE_KEY, mTwoPane);
             startActivity(seeTop10Tracks);
         }
     }
 
+    /*
+     * Clears Top10Tracks fragment when an artist is searched.
+     */
     @Override
     public void onArtistSearch() {
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -180,6 +195,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         }
     }
 
+    /*
+     * Shows PlayerFragment as a dialog if a track is selected.
+     */
     @Override
     public void onTrackSelected(String artistName, TrackInfo trackInfo, int pos) {
         PlayerFragment fragment = new PlayerFragment();
@@ -194,6 +212,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         fragment.show(getSupportFragmentManager(), PLAYER_FRAGMENT_TAG);
     }
 
+    /*
+     * Stop MediaPlayerService when back is pressed.
+     */
     @Override
     public void onBackPressed() {
         super.onBackPressed();

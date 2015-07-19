@@ -13,21 +13,28 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+/*
+ * Holds PlayerFragment in phone layout.
+ */
 public class PlayerActivity extends AppCompatActivity {
     private static String LOG_TAG;
     private static String PLAYER_FRAGMENT_TAG = "playerFragment";
     private MenuItem mShareItem;
     private ShareActionProvider mShareActionProvider;
+
+    /*
+     * Listens for MediaPlayerService broadcasts.
+     */
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra(MediaPlayerService.MEDIA_EVENT_KEY);
-            if (!message.equals(MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS)) {
+            if (!message.equals(MediaPlayerService.MEDIA_TRACK_PROGRESS)) {
                 Log.d(LOG_TAG, "Got message: " + message);
             }
 
             switch (message) {
-                case MediaPlayerService.MEDIA_EVENT_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_TRACK_LOADED:
                     if (mShareActionProvider != null) {
                         mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
                     }
@@ -35,7 +42,7 @@ public class PlayerActivity extends AppCompatActivity {
                         mShareItem.setVisible(true);
                     }
                     break;
-                case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_TRACK_NOT_LOADED:
                     if (mShareItem != null) {
                         mShareItem.setVisible(false);
                     }
@@ -44,6 +51,9 @@ public class PlayerActivity extends AppCompatActivity {
         }
     };
 
+    /*
+     * Creates a PlayerFragment and passes intent data.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,35 +84,42 @@ public class PlayerActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().replace(R.id.player_fragment_container, fragment, PLAYER_FRAGMENT_TAG).commit();
     }
 
+    /*
+     * Registers for MediaPlayerService broadcasts and requests if a track is loaded.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(MediaPlayerService.MEDIA_EVENT));
-        Intent requestServiceIsTrackLoaded = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_EVENT_IS_TRACK_LOADED);
+        Intent requestServiceIsTrackLoaded = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_REQUEST_IS_TRACK_LOADED);
         startService(requestServiceIsTrackLoaded);
     }
 
+    /*
+     * Unregisters for broadcasts.
+     */
     @Override
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     }
 
+    /*
+     * Adds action bar items.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_player, menu);
+        mShareItem = menu.findItem(R.id.menu_item_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareItem);
         return true;
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        mShareItem = menu.findItem(R.id.menu_item_share);
-        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareItem);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
+    /*
+     * Detects if an action bar item is selected.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

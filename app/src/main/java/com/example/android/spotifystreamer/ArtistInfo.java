@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 
 /**
- * Stores artist information
+ * Stores artist information in ArrayLists.
  */
 public class ArtistInfo implements Parcelable {
     public static final Parcelable.Creator<ArtistInfo> CREATOR

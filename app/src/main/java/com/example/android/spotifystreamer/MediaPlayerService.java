@@ -34,9 +34,10 @@ import java.io.Serializable;
 //TODO: handle audio focus
 
 /**
- * Streams tracks and shows a notification with music player controls
+ * Streams tracks and shows a notification with music player controls.
  */
 public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
+    //control events
     public static final String ACTION_PLAY = "ACTION_PLAY";
     public static final String ACTION_PAUSE = "ACTION_PAUSE";
     public static final String ACTION_NEXT = "ACTION_NEXT";
@@ -45,22 +46,23 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public static final String ACTION_SEEK = "ACTION_SEEK";
     public static final String TRACK_SEEK_POSITION_KEY = "TRACK_SEEK_POSITION_KEY";
 
-    public static final String MEDIA_EVENT = "MEDIA_EVENT";
+    //media events
+    public static final String MEDIA_EVENT = "MEDIA_EVENT"; //broadcast identifier
     public static final String MEDIA_EVENT_KEY = "MEDIA_EVENT_KEY";
 
-    public static final String MEDIA_EVENT_BUFFERING_PROGRESS = "MEDIA_EVENT_BUFFERING_PROGRESS";
+    public static final String MEDIA_BUFFERING_PROGRESS = "MEDIA_BUFFERING_PROGRESS"; //buffering updates
     public static final String BUFFER_PROGRESS_KEY = "BUFFER_PROGRESS_KEY";
 
-    public static final String MEDIA_EVENT_TRACK_PROGRESS = "MEDIA_EVENT_TRACK_PROGRESS";
+    public static final String MEDIA_TRACK_PROGRESS = "MEDIA_TRACK_PROGRESS"; //track position updates
     public static final String TRACK_PROGRESS_KEY = "TRACK_PROGRESS_KEY";
 
-    public static final String MEDIA_EVENT_PLAYING = "MEDIA_EVENT_PLAYING";
-    public static final String TRACK_URL_KEY = "TRACK_URL_KEY";
+    public static final String MEDIA_REQUEST_CURRENT_TRACK_STATUS = "MEDIA_REQUEST_CURRENT_TRACK_STATUS";
+    public static final String MEDIA_REPLY_CURRENT_TRACK_STATUS = "MEDIA_REPLY_CURRENT_TRACK_STATUS";
 
-    public static final String MEDIA_EVENT_NOT_PLAYING = "MEDIA_EVENT_NOT_PLAYING";
-    public static final String MEDIA_EVENT_REQUEST_NOW_PLAYING = "MEDIA_EVENT_REQUEST_NOW_PLAYING";
-    public static final String MEDIA_EVENT_REPLY_NOW_PLAYING = "MEDIA_EVENT_REPLY_NOW_PLAYING";
-    public static final String MEDIA_EVENT_IS_TRACK_LOADED = "MEDIA_EVENT_IS_TRACK_LOADED";
+    public static final String MEDIA_REQUEST_IS_TRACK_LOADED = "MEDIA_REQUEST_IS_TRACK_LOADED";
+    public static final String MEDIA_REPLY_TRACK_NOT_LOADED = "MEDIA_REPLY_TRACK_NOT_LOADED";
+    public static final String MEDIA_REPLY_TRACK_LOADED = "MEDIA_REPLY_TRACK_LOADED";
+    public static final String TRACK_URL_KEY = "TRACK_URL_KEY";
 
     public static final String IS_PLAYING_KEY = "IS_PLAYING_KEY";
 
@@ -91,7 +93,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private WifiManager.WifiLock mWifiLock;
 
-
+    /*
+     * Target for adding image to notification when loaded by Picasso.
+     */
     private Target mImageTarget = new Target() {
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable) {
@@ -112,6 +116,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     };
 
+    /*
+     * Initializes MediaPlayer and Notifications.
+     */
     @Override
     public void onCreate() {
         LOG_TAG = getClass().getSimpleName();
@@ -150,6 +157,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mTrackProgressUpdateHandler = new Handler();
     }
 
+    /*
+     * Determines intent action.
+     */
     private void handleIntent(Intent intent) {
         if (intent == null || intent.getAction() == null) return;
 
@@ -176,15 +186,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             case ACTION_SEEK:
                 mController.getTransportControls().seekTo(intent.getIntExtra(TRACK_SEEK_POSITION_KEY, 0));
                 break;
-            case MEDIA_EVENT_REQUEST_NOW_PLAYING:
-                sendMessageToServiceHandler(MEDIA_EVENT_REQUEST_NOW_PLAYING);
+            case MEDIA_REQUEST_CURRENT_TRACK_STATUS:
+                sendMessageToServiceHandler(MEDIA_REQUEST_CURRENT_TRACK_STATUS);
                 break;
-            case MEDIA_EVENT_IS_TRACK_LOADED:
-                sendMessageToServiceHandler(MEDIA_EVENT_IS_TRACK_LOADED);
+            case MEDIA_REQUEST_IS_TRACK_LOADED:
+                sendMessageToServiceHandler(MEDIA_REQUEST_IS_TRACK_LOADED);
                 break;
         }
     }
 
+    /*
+     * Generate intent action of media player controls.
+     */
     private NotificationCompat.Action generateAction(int icon, String title, String intentAction) {
         Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
         intent.setAction(intentAction);
@@ -200,6 +213,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         return false;
     }
 
+    /*
+     * Builds a notification with MediaPlayer controls
+     */
     private void buildNotification(NotificationCompat.Action action) {
         Intent deleteIntent = new Intent(getApplicationContext(), MediaPlayerService.class);
         deleteIntent.setAction(ACTION_STOP);
@@ -238,12 +254,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     }
 
+    /*
+     * Sends action to worker thread
+     */
     private void sendMessageToServiceHandler(String action) {
         Message msg = mServiceHandler.obtainMessage();
         msg.obj = action;
         mServiceHandler.sendMessage(msg);
     }
 
+    /*
+     * Sends action to worker thread
+     */
     private void sendMessageToServiceHandler(String action, int value) {
         Message msg = mServiceHandler.obtainMessage();
         msg.obj = action;
@@ -251,6 +273,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mServiceHandler.sendMessage(msg);
     }
 
+    /*
+     * Initiates MediaSession for notification MediaPlayer controls.
+     */
     private void initMediaSessions() {
 
         //TODO: Test on pre lollipop device
@@ -315,7 +340,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                                      super.onStop();
                                      Log.d(LOG_TAG, "onStop");
                                      broadcastMessage(ACTION_STOP);
-                                     broadcastMessage(MEDIA_EVENT_NOT_PLAYING);
+                                     broadcastMessage(MEDIA_REPLY_TRACK_NOT_LOADED);
                                      mWifiLock.release();
                                      stopSelf();
                                  }
@@ -334,12 +359,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         );
     }
 
+    /*
+     * Releases MediaPlayerSession.
+     */
     @Override
     public boolean onUnbind(Intent intent) {
         mSession.release();
         return super.onUnbind(intent);
     }
 
+    /*
+     * Gets track information and handles intent action.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "Service started");
@@ -357,6 +388,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         return START_STICKY;
     }
 
+    /*
+     * Removes notification and releases assets.
+     */
     @Override
     public void onDestroy() {
         Log.d(LOG_TAG, "Service destroyed");
@@ -381,6 +415,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         return null;
     }
 
+    /*
+     * Loads a track asynchronously.
+     */
     private void loadTrack(String urlString) {
         if (Utility.isNetworkConnected(this)) {
             try {
@@ -389,7 +426,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 mMediaPlayer.setDataSource(urlString);
                 mWifiLock.acquire();
                 mMediaPlayer.prepareAsync();
-                broadcastMessage(MEDIA_EVENT_PLAYING, TRACK_URL_KEY, mNowPlayingUrl);
+                broadcastMessage(MEDIA_REPLY_TRACK_LOADED, TRACK_URL_KEY, mNowPlayingUrl);
 
             } catch (IOException e) {
                 Utility.displayToast(this, getString(R.string.error_unable_to_play_track));
@@ -397,6 +434,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     }
 
+    /*
+     * Plays track when it's prepared.
+     */
     @Override
     public void onPrepared(MediaPlayer mp) {
         mIsPrepared = true;
@@ -409,6 +449,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     }
 
+    /*
+     * Updates notification when track finishes playing.
+     */
     @Override
     public void onCompletion(MediaPlayer mp) {
         mWifiLock.release();
@@ -416,10 +459,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         broadcastMessage(ACTION_PAUSE);
     }
 
+    /*
+     * Starts playing media and broadcasts track progress.
+     */
     private void playMedia() {
         mMediaPlayer.start();
 
-        broadcastMessage(MEDIA_EVENT_BUFFERING_PROGRESS, BUFFER_PROGRESS_KEY, mBufferPercent);
+        broadcastMessage(MEDIA_BUFFERING_PROGRESS, BUFFER_PROGRESS_KEY, mBufferPercent);
 
         mTrackProgressUpdateHandler.postDelayed(new Runnable() {
             public void run() {
@@ -429,13 +475,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                         int duration = mMediaPlayer.getDuration();
                         float progress = ((float) mMediaPlayer.getCurrentPosition() / (float) duration) * 100;
                         mTrackProgress = (int) progress;
-                        broadcastMessage(MEDIA_EVENT_TRACK_PROGRESS, TRACK_PROGRESS_KEY, mTrackProgress);
+                        broadcastMessage(MEDIA_TRACK_PROGRESS, TRACK_PROGRESS_KEY, mTrackProgress);
                     }
                 }
             }
         }, mTrackProgressUpdateDelay);
     }
 
+    /*
+     * Pauses media.
+     */
     private void pauseMedia() {
         mWifiLock.release();
 
@@ -446,6 +495,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     }
 
+    /*
+     * Resets MediaPlayer and reloads track on error.
+     */
     private void resetMediaOnError() {
         mIsRecoveringFromError = true;
         resetMedia();
@@ -453,6 +505,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         broadcastMessage(ACTION_PAUSE);
     }
 
+    /*
+     * Resets MediaPlayer.
+     */
     private void resetMedia() {
         mIsPrepared = false;
         mIsPreparing = false;
@@ -461,6 +516,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mMediaPlayer.reset();
     }
 
+    /*
+     * Shows a toast and resets media on error.
+     */
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Utility.displayToast(this, getString(R.string.error_playback));
@@ -468,6 +526,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         return false;
     }
 
+    /*
+     * Stop service if app is removed from recents.
+     */
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
@@ -475,12 +536,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         stopSelf();
     }
 
+    /*
+     * Broadcasts buffering progress.
+     */
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
         mBufferPercent = percent;
-        broadcastMessage(MEDIA_EVENT_BUFFERING_PROGRESS, BUFFER_PROGRESS_KEY, percent);
+        broadcastMessage(MEDIA_BUFFERING_PROGRESS, BUFFER_PROGRESS_KEY, percent);
     }
 
+    /*
+     * Broadcasts a message.
+     */
     private void broadcastMessage(String message) {
         Log.d(LOG_TAG, "Broadcasting message: " + message);
         Intent intent = new Intent(MEDIA_EVENT);
@@ -489,8 +556,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    /*
+     * Broadcasts a message.
+     */
     private <T extends Serializable> void broadcastMessage(String message, String key, T value) {
-        if (!message.equals(MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS)) {
+        if (!message.equals(MediaPlayerService.MEDIA_TRACK_PROGRESS)) {
             Log.d(LOG_TAG, "Broadcasting message: " + message);
         }
 
@@ -501,8 +571,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void broadcastPlayerState() {
-        Log.d(LOG_TAG, "Broadcasting player info");
+    /*
+     * Broadcasts current track state for player ui.
+     */
+    private void broadcastCurrentTrackState() {
+        Log.d(LOG_TAG, "Broadcasting current track state");
 
         Intent intent = new Intent(MEDIA_EVENT);
 
@@ -513,11 +586,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 .putExtra(IS_PLAYING_KEY, isMediaPlaying())
                 .putExtra(TRACK_PROGRESS_KEY, mTrackProgress);
 
-        intent.putExtra(MEDIA_EVENT_KEY, MEDIA_EVENT_REPLY_NOW_PLAYING);
+        intent.putExtra(MEDIA_EVENT_KEY, MEDIA_REPLY_CURRENT_TRACK_STATUS);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    // Handler that receives messages from the thread
+    /*
+     * Processes actions in worker thread.
+     */
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
             super(looper);
@@ -561,14 +636,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                             playMedia();
                         }
                         break;
-                    case MEDIA_EVENT_REQUEST_NOW_PLAYING:
-                        broadcastPlayerState();
+                    case MEDIA_REQUEST_CURRENT_TRACK_STATUS:
+                        broadcastCurrentTrackState();
                         break;
-                    case MEDIA_EVENT_IS_TRACK_LOADED:
+                    case MEDIA_REQUEST_IS_TRACK_LOADED:
                         if (!mNowPlayingUrl.equals("")) {
-                            broadcastMessage(MEDIA_EVENT_PLAYING, TRACK_URL_KEY, mNowPlayingUrl);
+                            broadcastMessage(MEDIA_REPLY_TRACK_LOADED, TRACK_URL_KEY, mNowPlayingUrl);
                         } else {
-                            broadcastMessage(MEDIA_EVENT_NOT_PLAYING);
+                            broadcastMessage(MEDIA_REPLY_TRACK_NOT_LOADED);
                         }
                         break;
                 }

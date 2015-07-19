@@ -13,7 +13,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-
+/*
+ * Holds Top10Tracks fragment in phone layout
+ */
 public class Top10TracksActivity extends AppCompatActivity implements Top10TracksFragment.ItemSelectedCallback {
 
     private static String LOG_TAG;
@@ -21,16 +23,19 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
     private MenuItem mNowPlayingMenuItem;
     private MenuItem mShareItem;
     private ShareActionProvider mShareActionProvider;
+    /*
+     * Listens for media player service broadcasts
+     */
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra(MediaPlayerService.MEDIA_EVENT_KEY);
-            if (!message.equals(MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS)) {
+            if (!message.equals(MediaPlayerService.MEDIA_TRACK_PROGRESS)) {
                 Log.d(LOG_TAG, "Got message: " + message);
             }
 
             switch (message) {
-                case MediaPlayerService.MEDIA_EVENT_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_TRACK_LOADED:
                     if (mNowPlayingMenuItem != null) {
                         mNowPlayingMenuItem.setVisible(true);
                     }
@@ -41,7 +46,7 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
                         mShareItem.setVisible(true);
                     }
                     break;
-                case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_TRACK_NOT_LOADED:
                     if (mNowPlayingMenuItem != null) {
                         mNowPlayingMenuItem.setVisible(false);
                     }
@@ -49,7 +54,7 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
                         mShareItem.setVisible(false);
                     }
                     break;
-                case MediaPlayerService.MEDIA_EVENT_REPLY_NOW_PLAYING:
+                case MediaPlayerService.MEDIA_REPLY_CURRENT_TRACK_STATUS:
                     Intent showPlayerIntent;
                     String artistName = intent.getStringExtra(PlayerFragment.ARTIST_NAME_KEY);
                     TrackInfo trackInfo = intent.getParcelableExtra(PlayerFragment.TRACK_INFO_KEY);
@@ -75,6 +80,9 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
         }
     };
 
+    /*
+     * Add Top10Fragment to view
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,9 +91,6 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
         mTwoPane = getResources().getBoolean(R.bool.wide_layout);
 
         if (null == savedInstanceState) {
-            // Create the detail fragment and add it to the activity
-            // using a fragment transaction.
-
             Bundle arguments = new Bundle();
             arguments.putString(MainActivity.ARTIST_ID_KEY, getIntent().getStringExtra(MainActivity.ARTIST_ID_KEY));
             arguments.putString(MainActivity.ARTIST_NAME_KEY, getIntent().getStringExtra(MainActivity.ARTIST_NAME_KEY));
@@ -100,15 +105,21 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
         }
     }
 
+    /*
+     * Register for media player service broadcasts
+     */
     @Override
     protected void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(MediaPlayerService.MEDIA_EVENT));
-        Intent requestServiceIsTrackLoaded = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_EVENT_IS_TRACK_LOADED);
+        Intent requestServiceIsTrackLoaded = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_REQUEST_IS_TRACK_LOADED);
         startService(requestServiceIsTrackLoaded);
     }
 
+    /*
+     * Stop listening for broadcasts
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -119,22 +130,17 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_top10_tracks, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
         mNowPlayingMenuItem = menu.findItem(R.id.action_now_playing);
         mShareItem = menu.findItem(R.id.menu_item_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareItem);
-        return super.onPrepareOptionsMenu(menu);
+        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_now_playing:
-                Intent intent = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_EVENT_REQUEST_NOW_PLAYING);
+                Intent intent = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_REQUEST_CURRENT_TRACK_STATUS);
                 startService(intent);
                 break;
             case R.id.action_settings:

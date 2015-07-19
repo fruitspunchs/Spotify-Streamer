@@ -22,6 +22,9 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+/*
+ * Shows current track information and controls MediaPlayerService through intents.
+ */
 public class PlayerFragment extends DialogFragment {
     public static String ARTIST_NAME_KEY = "artistName";
     public static String TRACK_INFO_KEY = "trackInfo";
@@ -48,12 +51,14 @@ public class PlayerFragment extends DialogFragment {
     private int mSeekBarTrackProgress;
     private int mSeekBarBufferProgress;
 
-
+    /*
+     * Listens for media player service broadcasts
+     */
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra(MediaPlayerService.MEDIA_EVENT_KEY);
-            if (!message.equals(MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS)) {
+            if (!message.equals(MediaPlayerService.MEDIA_TRACK_PROGRESS)) {
                 Log.d(LOG_TAG, "Got message: " + message);
             }
 
@@ -83,11 +88,11 @@ public class PlayerFragment extends DialogFragment {
                         getActivity().finish();
                     }
                     break;
-                case MediaPlayerService.MEDIA_EVENT_BUFFERING_PROGRESS:
+                case MediaPlayerService.MEDIA_BUFFERING_PROGRESS:
                     int bufferPercent = intent.getIntExtra(MediaPlayerService.BUFFER_PROGRESS_KEY, 0);
                     mTrackSeekBar.setSecondaryProgress(bufferPercent);
                     break;
-                case MediaPlayerService.MEDIA_EVENT_TRACK_PROGRESS:
+                case MediaPlayerService.MEDIA_TRACK_PROGRESS:
                     int trackProgress = intent.getIntExtra(MediaPlayerService.TRACK_PROGRESS_KEY, 0);
                     mTrackSeekBar.setProgress(trackProgress);
                     break;
@@ -95,6 +100,9 @@ public class PlayerFragment extends DialogFragment {
         }
     };
 
+    /*
+     * Populates player with track info and plays track.
+     */
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

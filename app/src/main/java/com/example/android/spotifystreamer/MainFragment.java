@@ -22,7 +22,7 @@ import retrofit.RetrofitError;
 
 
 /**
- * Search Spotify for a list of artists and display them
+ * Searches Spotify for a list of artists and display them.
  */
 public class MainFragment extends Fragment {
 
@@ -38,7 +38,7 @@ public class MainFragment extends Fragment {
     }
 
     /**
-     * Creates the list to display artists and search box to find artists
+     * Creates the list to display artists and search box to find artists.
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -106,19 +106,22 @@ public class MainFragment extends Fragment {
         super.onResume();
         mArtistAdapter.notifyDataSetChanged();
 
+        //Scroll to previously selected position
         if (mSelectedPos != ListView.INVALID_POSITION) {
             mListView.smoothScrollToPosition(mSelectedPos);
         }
     }
 
     private void searchArtists(String query) {
-        //TODO: temp debug code
         if (Utility.isNetworkConnected(getActivity())) {
             mProgressBar.setVisibility(View.VISIBLE);
             new FetchArtistTask().execute(query);
         }
     }
 
+    /*
+     * Used to communicate with activities containing this fragment
+     */
     public interface Callback {
         void onArtistSelected(String id, String artistName);
 
@@ -126,7 +129,7 @@ public class MainFragment extends Fragment {
     }
 
     /**
-     * Searches Spotify for artists and displays them in a list
+     * Searches Spotify for artists and displays them in a list.
      */
     public class FetchArtistTask extends AsyncTask<String, Void, List<Artist>> {
         private final String LOG_TAG = FetchArtistTask.class.getSimpleName();
