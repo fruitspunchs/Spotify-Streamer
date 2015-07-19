@@ -18,7 +18,7 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
 
     private static String LOG_TAG;
     private boolean mTwoPane;
-    private MenuItem nowPlayingMenuItem;
+    private MenuItem mNowPlayingMenuItem;
     private MenuItem mShareItem;
     private ShareActionProvider mShareActionProvider;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -31,13 +31,23 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
 
             switch (message) {
                 case MediaPlayerService.MEDIA_EVENT_PLAYING:
-                    nowPlayingMenuItem.setVisible(true);
-                    mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
-                    mShareItem.setVisible(true);
+                    if (mNowPlayingMenuItem != null) {
+                        mNowPlayingMenuItem.setVisible(true);
+                    }
+                    if (mShareActionProvider != null) {
+                        mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
+                    }
+                    if (mShareItem != null) {
+                        mShareItem.setVisible(true);
+                    }
                     break;
                 case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
-                    nowPlayingMenuItem.setVisible(false);
-                    mShareItem.setVisible(false);
+                    if (mNowPlayingMenuItem != null) {
+                        mNowPlayingMenuItem.setVisible(false);
+                    }
+                    if (mShareItem != null) {
+                        mShareItem.setVisible(false);
+                    }
                     break;
                 case MediaPlayerService.MEDIA_EVENT_REPLY_NOW_PLAYING:
                     Intent showPlayerIntent;
@@ -114,7 +124,7 @@ public class Top10TracksActivity extends AppCompatActivity implements Top10Track
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        nowPlayingMenuItem = menu.findItem(R.id.action_now_playing);
+        mNowPlayingMenuItem = menu.findItem(R.id.action_now_playing);
         mShareItem = menu.findItem(R.id.menu_item_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareItem);
         return super.onPrepareOptionsMenu(menu);

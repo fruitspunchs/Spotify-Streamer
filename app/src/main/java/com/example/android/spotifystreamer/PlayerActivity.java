@@ -28,11 +28,17 @@ public class PlayerActivity extends AppCompatActivity {
 
             switch (message) {
                 case MediaPlayerService.MEDIA_EVENT_PLAYING:
-                    mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
-                    mShareItem.setVisible(true);
+                    if (mShareActionProvider != null) {
+                        mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
+                    }
+                    if (mShareItem != null) {
+                        mShareItem.setVisible(true);
+                    }
                     break;
                 case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
-                    mShareItem.setVisible(false);
+                    if (mShareItem != null) {
+                        mShareItem.setVisible(false);
+                    }
                     break;
             }
         }

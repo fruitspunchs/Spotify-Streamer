@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     private static String TOP_10_TRACKS_FRAGMENT_TAG = "top10TracksFragment";
     private String LOG_TAG;
     private boolean mTwoPane;
-    private MenuItem nowPlayingMenuItem;
+    private MenuItem mNowPlayingMenuItem;
 
     private MenuItem mShareItem;
     private ShareActionProvider mShareActionProvider;
@@ -41,13 +41,23 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
 
             switch (message) {
                 case MediaPlayerService.MEDIA_EVENT_PLAYING:
-                    nowPlayingMenuItem.setVisible(true);
-                    mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
-                    mShareItem.setVisible(true);
+                    if (mNowPlayingMenuItem != null) {
+                        mNowPlayingMenuItem.setVisible(true);
+                    }
+                    if (mShareActionProvider != null) {
+                        mShareActionProvider.setShareIntent(Utility.createShareTrackIntent(intent.getStringExtra(MediaPlayerService.TRACK_URL_KEY)));
+                    }
+                    if (mShareItem != null) {
+                        mShareItem.setVisible(true);
+                    }
                     break;
                 case MediaPlayerService.MEDIA_EVENT_NOT_PLAYING:
-                    nowPlayingMenuItem.setVisible(false);
-                    mShareItem.setVisible(false);
+                    if (mNowPlayingMenuItem != null) {
+                        mNowPlayingMenuItem.setVisible(false);
+                    }
+                    if (mShareItem != null) {
+                        mShareItem.setVisible(false);
+                    }
                     break;
                 case MediaPlayerService.MEDIA_EVENT_REPLY_NOW_PLAYING:
                     Intent showPlayerIntent;
@@ -102,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(MediaPlayerService.MEDIA_EVENT));
 
-        if (nowPlayingMenuItem != null) {
+        if (mNowPlayingMenuItem != null) {
             Intent requestServiceIsTrackLoaded = new Intent(this, MediaPlayerService.class).setAction(MediaPlayerService.MEDIA_EVENT_IS_TRACK_LOADED);
             startService(requestServiceIsTrackLoaded);
         }
@@ -123,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        nowPlayingMenuItem = menu.findItem(R.id.action_now_playing);
+        mNowPlayingMenuItem = menu.findItem(R.id.action_now_playing);
         mShareItem = menu.findItem(R.id.menu_item_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareItem);
         return super.onPrepareOptionsMenu(menu);
