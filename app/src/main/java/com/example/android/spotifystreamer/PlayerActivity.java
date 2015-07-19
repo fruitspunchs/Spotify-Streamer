@@ -1,5 +1,6 @@
 package com.example.android.spotifystreamer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -14,11 +15,23 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
+        Intent intent = getIntent();
+
+        String artistName = intent.getStringExtra(PlayerFragment.ARTIST_NAME_KEY);
+        TrackInfo trackInfo = intent.getParcelableExtra(PlayerFragment.TRACK_INFO_KEY);
+        int trackPosition = intent.getIntExtra(PlayerFragment.TRACK_INDEX_KEY, 0);
+        int bufferProgress = intent.getIntExtra(MediaPlayerService.BUFFER_PROGRESS_KEY, 0);
+        boolean isPlaying = intent.getBooleanExtra(MediaPlayerService.IS_PLAYING_KEY, false);
+        int seekBarPosition = intent.getIntExtra(MediaPlayerService.TRACK_PROGRESS_KEY, 0);
+
         PlayerFragment fragment = new PlayerFragment();
         Bundle args = new Bundle();
-        args.putString(PlayerFragment.ARTIST_NAME_KEY, getIntent().getStringExtra(PlayerFragment.ARTIST_NAME_KEY));
-        args.putParcelable(PlayerFragment.TRACK_INFO_KEY, getIntent().getParcelableExtra(PlayerFragment.TRACK_INFO_KEY));
-        args.putInt(PlayerFragment.TRACK_POSITION_KEY, getIntent().getIntExtra(PlayerFragment.TRACK_POSITION_KEY, 0));
+        args.putString(PlayerFragment.ARTIST_NAME_KEY, artistName);
+        args.putParcelable(PlayerFragment.TRACK_INFO_KEY, trackInfo);
+        args.putInt(PlayerFragment.TRACK_INDEX_KEY, trackPosition);
+        args.putInt(MediaPlayerService.BUFFER_PROGRESS_KEY, bufferProgress);
+        args.putBoolean(MediaPlayerService.IS_PLAYING_KEY, isPlaying);
+        args.putInt(MediaPlayerService.TRACK_PROGRESS_KEY, seekBarPosition);
         fragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction().replace(R.id.player_fragment_container, fragment, PLAYER_FRAGMENT_TAG).commit();
