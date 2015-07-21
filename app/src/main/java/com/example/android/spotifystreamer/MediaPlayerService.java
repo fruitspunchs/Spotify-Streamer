@@ -430,6 +430,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
             } catch (IOException e) {
                 Utility.displayToast(this, getString(R.string.error_unable_to_play_track));
+                resetMedia();
             }
         }
     }
