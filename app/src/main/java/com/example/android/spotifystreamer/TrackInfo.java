@@ -1,17 +1,79 @@
 package com.example.android.spotifystreamer;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
 /**
  * Stores track information
  */
-public class TrackInfo {
+public class TrackInfo implements Parcelable {
+    public static final Parcelable.Creator<TrackInfo> CREATOR
+            = new Parcelable.Creator<TrackInfo>() {
+        public TrackInfo createFromParcel(Parcel in) {
+            return new TrackInfo(in);
+        }
+
+        public TrackInfo[] newArray(int size) {
+            return new TrackInfo[size];
+        }
+    };
     private final ArrayList<String> mTrackNames = new ArrayList<>();
     private final ArrayList<String> mAlbumNames = new ArrayList<>();
     private final ArrayList<String> mLargeThumbnails = new ArrayList<>();
     private final ArrayList<String> mMediumThumbnails = new ArrayList<>();
     private final ArrayList<String> mTrackPreviewUrls = new ArrayList<>();
 
+    public TrackInfo() {
+
+    }
+
+    private TrackInfo(Parcel in) {
+        in.readStringList(mTrackNames);
+        in.readStringList(mAlbumNames);
+        in.readStringList(mLargeThumbnails);
+        in.readStringList(mMediumThumbnails);
+        in.readStringList(mTrackPreviewUrls);
+    }
+
+    public int getNextTrackIndex(int currentPosition) {
+        int nextItem = currentPosition + 1;
+
+        if (nextItem > mTrackNames.size() - 1) {
+            return 0;
+        } else {
+            return nextItem;
+        }
+    }
+
+    public int getPreviousTrackIndex(int currentPosition) {
+        int previousItem = currentPosition - 1;
+
+        if (previousItem < 0) {
+            return mTrackNames.size() - 1;
+        } else {
+            return previousItem;
+        }
+    }
+
+    public boolean isEmpty() {
+        return mTrackNames.isEmpty();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeStringList(mTrackNames);
+        dest.writeStringList(mAlbumNames);
+        dest.writeStringList(mLargeThumbnails);
+        dest.writeStringList(mMediumThumbnails);
+        dest.writeStringList(mTrackPreviewUrls);
+    }
 
     public ArrayList<String> getTrackPreviewUrls() {
         return mTrackPreviewUrls;

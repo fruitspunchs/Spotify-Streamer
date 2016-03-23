@@ -1,9 +1,5 @@
 package com.example.android.spotifystreamer;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -27,19 +22,23 @@ import retrofit.RetrofitError;
 
 
 /**
- * Search Spotify for a list of artists and display them
+ * Searches Spotify for a list of artists and display them.
  */
-public class MainActivityFragment extends Fragment {
+public class MainFragment extends Fragment {
 
+    private static String ARTIST_INFO_KEY = "artistInfo";
+    private static String SELECTED_POS_KEY = "selectedPos";
     private SpotifyArtistArrayAdapter mArtistAdapter;
-    private Toast mToast;
     private ProgressBar mProgressBar;
+    private ArtistInfo mArtistInfo;
+    private int mSelectedPos = ListView.INVALID_POSITION;
+    private ListView mListView;
 
-    public MainActivityFragment() {
+    public MainFragment() {
     }
 
     /**
-     * Creates the list to display artists and search box to find artists
+     * Creates the list to display artists and search box to find artists.
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,23 +46,29 @@ public class MainActivityFragment extends Fragment {
         final String LOG_TAG = this.getClass().getSimpleName();
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ArtistInfo mArtistInfo = new ArtistInfo();
+        if (null == savedInstanceState) {
+            mArtistInfo = new ArtistInfo();
+        } else {
+            mArtistInfo = savedInstanceState.getParcelable(ARTIST_INFO_KEY);
+            mSelectedPos = savedInstanceState.getInt(SELECTED_POS_KEY);
+        }
+
         mArtistAdapter = new SpotifyArtistArrayAdapter(getActivity(), mArtistInfo, R.layout.list_item_artist, R.id.list_item_artist_textview, R.id.list_item_artist_imageview);
 
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar_artist_search);
         mProgressBar.setVisibility(View.GONE);
 
-        final ListView listView = (ListView) rootView.findViewById(R.id.list_view_artist);
-        listView.setAdapter(mArtistAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView = (ListView) rootView.findViewById(R.id.list_view_artist);
+        mListView.setAdapter(mArtistAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 String artistId = mArtistAdapter.getId(position);
                 String artistName = mArtistAdapter.getItem(position);
-                Intent seeTop10Tracks = new Intent(getActivity(), Top10TracksActivity.class).putExtra(Intent.EXTRA_TEXT, artistId).putExtra(Intent.EXTRA_TITLE, artistName);
+                mSelectedPos = position;
 
-                startActivity(seeTop10Tracks);
+                ((Callback) getActivity()).onArtistSelected(artistId, artistName);
 
             }
         });
@@ -73,7 +78,10 @@ public class MainActivityFragment extends Fragment {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
+                ((Callback) getActivity()).onArtistSearch();
+                mArtistAdapter.clear();
                 searchArtists(query);
+                mListView.clearChoices();
                 return false;
             }
 
@@ -87,40 +95,47 @@ public class MainActivityFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(ARTIST_INFO_KEY, mArtistInfo);
+        outState.putInt(SELECTED_POS_KEY, mSelectedPos);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mArtistAdapter.notifyDataSetChanged();
+
+        //Scroll to previously selected position
+        if (mSelectedPos != ListView.INVALID_POSITION) {
+            mListView.smoothScrollToPosition(mSelectedPos);
+        }
     }
 
     private void searchArtists(String query) {
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-
-        if (isConnected) {
+        if (Utility.isNetworkConnected(getActivity())) {
             mProgressBar.setVisibility(View.VISIBLE);
             new FetchArtistTask().execute(query);
-        } else {
-            displayToast(getString(R.string.toast_no_network_connectivity));
         }
     }
 
-    private void displayToast(String message) {
-        if (mToast != null) {
-            mToast.cancel();
-        }
+    /*
+     * Used to communicate with activities containing this fragment
+     */
+    public interface Callback {
+        void onArtistSelected(String id, String artistName);
 
-        mToast = Toast.makeText(getActivity(), message, Toast.LENGTH_LONG);
-        mToast.show();
+        void onArtistSearch();
     }
-
 
     /**
-     * Searches Spotify for artists and displays them in a list
+     * Searches Spotify for artists and displays them in a list.
      */
     public class FetchArtistTask extends AsyncTask<String, Void, List<Artist>> {
         private final String LOG_TAG = FetchArtistTask.class.getSimpleName();
+
+        boolean hasCaughtError = false;
+        String errorString;
 
         @Override
         protected List<Artist> doInBackground(String... artist) {
@@ -132,7 +147,8 @@ public class MainActivityFragment extends Fragment {
                 results = spotify.searchArtists(artist[0]);
             } catch (RetrofitError error) {
                 SpotifyError spotifyError = SpotifyError.fromRetrofitError(error);
-                displayToast(spotifyError.getMessage());
+                hasCaughtError = true;
+                errorString = spotifyError.getMessage();
                 return null;
             }
 
@@ -145,9 +161,13 @@ public class MainActivityFragment extends Fragment {
             mArtistAdapter.clear();
             mProgressBar.setVisibility(View.GONE);
 
+            if (hasCaughtError) {
+                Utility.displayToast(getActivity(), errorString);
+            }
+
             if (artists != null) {
                 if (artists.isEmpty()) {
-                    displayToast(getString(R.string.toast_no_artist_found));
+                    Utility.displayToast(getActivity(), getString(R.string.toast_no_artist_found));
                     return;
                 }
 
