@@ -1,3 +1,6 @@
+# Note
+Due to Spotify API changes the app is unable to search for artists.
+
 # SpotifyStreamer
 Search Spotify for artists and stream samples of their top 10 tracks.
 
